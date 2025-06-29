@@ -70,7 +70,7 @@ public struct ZStackPagingLayout: View {
         ZStack {
             Rectangle()
                 .fill(colors[index])
-                .frame(width: 100, height: 100)
+                .frame(width: geometry.size.width, height: geometry.size.height / 2)
             
             Text("\(Int(viewStates[index].zIndex))")
                 .font(.title)
@@ -109,7 +109,7 @@ public struct ZStackPagingLayout: View {
     }
     
     private func handleDragChanged(index: Int, value: DragGesture.Value) {
-        viewStates[index].dragOffset = value.translation
+        viewStates[index].dragOffset = CGSize(width: 0, height: value.translation.height)
         viewStates[index].isDragging = true
     }
     
@@ -171,7 +171,7 @@ public struct ZStackPagingLayout: View {
                 }
                 
                 if let index = draggedViewIndex {
-                    viewStates[index].dragOffset = value.translation
+                    viewStates[index].dragOffset = CGSize(width: 0, height: value.translation.height)
                 }
             }
             .onEnded { value in
