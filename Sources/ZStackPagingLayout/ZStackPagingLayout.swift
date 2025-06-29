@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct ViewState {
+struct ViewState: Sendable {
     var isInUpperArea: Bool = false
     var dragOffset: CGSize = .zero
     var isDragging: Bool = false
@@ -10,8 +10,12 @@ struct ViewState {
 @available(iOS 18.0, macOS 15.0, *)
 public struct ZStackPagingLayout<Content: View>: View {
     private let content: Content
-    @State private var viewStates: [ViewState] = []
-    @State private var draggedViewIndex: Int? = nil
+    
+    @State
+    var viewStates: [ViewState] = []
+    
+    @State
+    var draggedViewIndex: Int? = nil
     
     public init(@ViewBuilder content: () -> Content) {
         self.content = content()
@@ -27,7 +31,7 @@ public struct ZStackPagingLayout<Content: View>: View {
     
     private func createLayout(geometry: GeometryProxy, subviews: SubviewsCollection) -> some View {
         ZStack {
-            Color.gray.opacity(0.2)
+            Color.clear
             
             // All views in reverse order
             ForEach(subviews.indices.reversed(), id: \.self) { index in
@@ -160,7 +164,7 @@ public struct ZStackPagingLayout<Content: View>: View {
                 .overlay {
                     Text("\(i)")
                 }
-                .mask(RoundedRectangle(cornerRadius: 64))
+
                 .shadow(radius: 20)
         }
     }.ignoresSafeArea()
