@@ -32,7 +32,7 @@ public struct ZStackPagingLayout<Content: View>: View {
                 .frame(width: geometry.size.width, height: geometry.size.height)
             
             // All views in the same ZStack to maintain global zIndex
-            ForEach(subviews.indices, id: \.self) { index in
+            ForEach(subviews.indices.reversed(), id: \.self) { index in
                 createDraggableView(
                     subview: subviews[index],
                     index: index,
@@ -191,6 +191,11 @@ public struct ZStackPagingLayout<Content: View>: View {
 @available(iOS 18.0, macOS 15.0, *)
 #Preview {
     ZStackPagingLayout {
+        Color.green
+            .overlay {
+                Text("Done")
+            }
+        
         ForEach(0..<3) { i in
             Rectangle()
                 .fill(Color.red)
@@ -203,9 +208,5 @@ public struct ZStackPagingLayout<Content: View>: View {
                     print(i)
                 }
         }
-        Color.green
-            .overlay {
-                Text("Done")
-            }
     }.ignoresSafeArea()
 }
