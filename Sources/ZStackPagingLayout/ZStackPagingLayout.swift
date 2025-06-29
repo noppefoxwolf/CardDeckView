@@ -28,12 +28,8 @@ public struct ZStackPagingLayout<Content: View>: View {
     private func createLayout(geometry: GeometryProxy, subviews: SubviewsCollection) -> some View {
         ZStack {
             // Background areas
-            VStack(spacing: 0) {
-                Color.clear
-                    .frame(height: geometry.size.height / 2)
-                Color.gray.opacity(0.2)
-                    .frame(height: geometry.size.height / 2)
-            }
+            Color.gray.opacity(0.2)
+                .frame(width: geometry.size.width, height: geometry.size.height)
             
             // All views in the same ZStack to maintain global zIndex
             ForEach(subviews.indices, id: \.self) { index in
@@ -46,8 +42,8 @@ public struct ZStackPagingLayout<Content: View>: View {
                 .position(
                     x: geometry.size.width / 2,
                     y: (index < viewStates.count ? viewStates[index].isInUpperArea : false) ? 
-                        geometry.size.height / 4 : 
-                        geometry.size.height * 3 / 4
+                        -geometry.size.height / 2 : 
+                        geometry.size.height / 2
                 )
             }
         }
@@ -62,12 +58,7 @@ public struct ZStackPagingLayout<Content: View>: View {
     private func createDraggableView(subview: Subview, index: Int, geometry: GeometryProxy, isUpperArea: Bool) -> some View {
         ZStack {
             subview
-                .frame(width: geometry.size.width, height: geometry.size.height / 2)
-            
-            Text("\(Int(index < viewStates.count ? viewStates[index].zIndex : Double(index)))")
-                .font(.title)
-                .fontWeight(.bold)
-                .foregroundColor(.white)
+                .frame(width: geometry.size.width, height: geometry.size.height)
         }
         .offset(index < viewStates.count ? viewStates[index].dragOffset : .zero)
         .zIndex(index < viewStates.count ? viewStates[index].zIndex : Double(index))
@@ -100,8 +91,7 @@ public struct ZStackPagingLayout<Content: View>: View {
     }
     
     private func handleDragEnded(index: Int, value: DragGesture.Value, geometry: GeometryProxy, isUpperArea: Bool) {
-        let screenMidPoint = geometry.size.height / 2
-        let currentY = (isUpperArea ? geometry.size.height / 4 : geometry.size.height * 3 / 4) + value.translation.height
+        let currentY = (isUpperArea ? -geometry.size.height / 2 : geometry.size.height / 2) + value.translation.height
         
         // Calculate velocity from predictedEndTranslation
         let velocity = CGSize(
@@ -114,9 +104,9 @@ public struct ZStackPagingLayout<Content: View>: View {
         let velocityThreshold: CGFloat = 50
         
         if isUpperArea {
-            shouldChangeArea = currentY > screenMidPoint || velocity.height > velocityThreshold
+            shouldChangeArea = currentY > 0 || velocity.height > velocityThreshold
         } else {
-            shouldChangeArea = currentY < screenMidPoint || velocity.height < -velocityThreshold
+            shouldChangeArea = currentY < 0 || velocity.height < -velocityThreshold
         }
         
         if shouldChangeArea {
@@ -201,10 +191,21 @@ public struct ZStackPagingLayout<Content: View>: View {
 @available(iOS 18.0, macOS 15.0, *)
 #Preview {
     ZStackPagingLayout {
-        Rectangle().fill(.red)
-        Rectangle().fill(.green)
-        Rectangle().fill(.blue)
-        Rectangle().fill(.orange)
-        Rectangle().fill(.purple)
-    }
+        ForEach(0..<3) { i in
+            Rectangle()
+                .fill(Color.red)
+                .overlay {
+                    Text("\(i)")
+                }
+                .mask(RoundedRectangle(cornerRadius: 64))
+                .shadow(radius: 20)
+                .onAppear {
+                    print(i)
+                }
+        }
+        Color.green
+            .overlay {
+                Text("Done")
+            }
+    }.ignoresSafeArea()
 }
