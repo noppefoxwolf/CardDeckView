@@ -34,7 +34,7 @@ public struct ZStackPagingLayout<Content: View>: View {
             Color.clear
             
             // All views in reverse order
-            ForEach(subviews.indices.reversed(), id: \.self) { index in
+            ForEach(subviews.indices, id: \.self) { index in
                 createDraggableView(
                     subview: subviews[index],
                     index: index,
@@ -80,7 +80,7 @@ public struct ZStackPagingLayout<Content: View>: View {
     private func initializeViewStates(count: Int) {
         if viewStates.count != count {
             viewStates = (0..<count).map { index in
-                ViewState(zIndex: Double(index))
+                ViewState(zIndex: Double(count - 1 - index))
             }
         }
     }
@@ -109,7 +109,7 @@ public struct ZStackPagingLayout<Content: View>: View {
         DragGesture()
             .onChanged { value in
                 if draggedViewIndex == nil {
-                    let targetViews = value.translation.height < 0 ? lowerAreaViews : upperAreaViews
+                    let targetViews = value.translation.height > 0 ? upperAreaViews : lowerAreaViews
                     
                     if let nearestIndex = findNearestView(to: value.startLocation, in: targetViews) {
                         draggedViewIndex = nearestIndex
@@ -133,13 +133,11 @@ public struct ZStackPagingLayout<Content: View>: View {
     private func findNearestView(to location: CGPoint, in viewIndices: [Int]) -> Int? {
         guard !viewIndices.isEmpty else { return nil }
         
-        let isLowerAreaViews = viewIndices.allSatisfy { !viewStates[$0].isInUpperArea }
+        let isUpperAreaViews = viewIndices.allSatisfy { viewStates[$0].isInUpperArea }
         
-        return isLowerAreaViews ?
-            viewIndices.max { viewStates[$0].zIndex < viewStates[$1].zIndex } :
-            viewIndices.min { 
-                distanceToView(index: $0, from: location) < distanceToView(index: $1, from: location)
-            }
+        return isUpperAreaViews ?
+            viewIndices.max() :
+            viewIndices.min()
     }
     
     private func distanceToView(index: Int, from location: CGPoint) -> CGFloat {
@@ -153,11 +151,6 @@ public struct ZStackPagingLayout<Content: View>: View {
 @available(iOS 18.0, macOS 15.0, *)
 #Preview {
     ZStackPagingLayout {
-        Color.green
-            .overlay {
-                Text("Done")
-            }
-        
         ForEach(0..<3) { i in
             Rectangle()
                 .fill(Color.red)
@@ -167,5 +160,10 @@ public struct ZStackPagingLayout<Content: View>: View {
 
                 .shadow(radius: 20)
         }
+        
+        Color.green
+            .overlay {
+                Text("Done")
+            }
     }.ignoresSafeArea()
 }
