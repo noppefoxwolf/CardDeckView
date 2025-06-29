@@ -79,15 +79,7 @@ public struct ZStackPagingLayout: View {
         }
         .offset(viewStates[index].dragOffset)
         .zIndex(viewStates[index].zIndex)
-        .gesture(
-            DragGesture()
-                .onChanged { value in
-                    handleDragChanged(index: index, value: value)
-                }
-                .onEnded { value in
-                    handleDragEnded(index: index, value: value, geometry: geometry, isUpperArea: isUpperArea)
-                }
-        )
+        .allowsHitTesting(false)
     }
     
     private var upperAreaViews: [Int] {
