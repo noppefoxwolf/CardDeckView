@@ -8,7 +8,7 @@ struct ViewState: Sendable {
 }
 
 @available(iOS 18.0, macOS 15.0, *)
-public struct ZStackPagingLayout<Content: View>: View {
+public struct ZStackView<Content: View>: View {
     private let content: Content
     
     @State
@@ -150,7 +150,7 @@ public struct ZStackPagingLayout<Content: View>: View {
 
 @available(iOS 18.0, macOS 15.0, *)
 #Preview {
-    ZStackPagingLayout {
+    ZStackView {
         ForEach(0..<3) { i in
             Rectangle()
                 .fill(Color.red)
