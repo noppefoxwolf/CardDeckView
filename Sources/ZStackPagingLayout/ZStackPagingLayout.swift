@@ -7,26 +7,25 @@ struct ViewState {
     var zIndex: Double
 }
 
-@available(iOS 13.0, macOS 10.15, *)
-public struct ZStackPagingLayout: View {
-    private let colors: [Color]
+@available(iOS 18.0, macOS 15.0, *)
+public struct ZStackPagingLayout<Content: View>: View {
+    private let content: Content
     @State private var viewStates: [ViewState] = []
     @State private var draggedViewIndex: Int? = nil
     
-    public init(colors: [Color] = [.red, .green]) {
-        self.colors = colors
+    public init(@ViewBuilder content: () -> Content) {
+        self.content = content()
     }
     
     public var body: some View {
         GeometryReader { geometry in
-            self.createLayout(geometry: geometry)
-        }
-        .onAppear {
-            self.initializeViewStates()
+            Group(subviews: content) { subviews in
+                self.createLayout(geometry: geometry, subviews: subviews)
+            }
         }
     }
     
-    private func createLayout(geometry: GeometryProxy) -> some View {
+    private func createLayout(geometry: GeometryProxy, subviews: SubviewsCollection) -> some View {
         ZStack {
             // Background areas
             VStack(spacing: 0) {
@@ -37,38 +36,41 @@ public struct ZStackPagingLayout: View {
             }
             
             // All views in the same ZStack to maintain global zIndex
-            ForEach(viewStates.indices, id: \.self) { index in
+            ForEach(subviews.indices, id: \.self) { index in
                 createDraggableView(
+                    subview: subviews[index],
                     index: index,
                     geometry: geometry,
-                    isUpperArea: viewStates[index].isInUpperArea
+                    isUpperArea: index < viewStates.count ? viewStates[index].isInUpperArea : false
                 )
                 .position(
                     x: geometry.size.width / 2,
-                    y: viewStates[index].isInUpperArea ? 
+                    y: (index < viewStates.count ? viewStates[index].isInUpperArea : false) ? 
                         geometry.size.height / 4 : 
                         geometry.size.height * 3 / 4
                 )
             }
         }
         .contentShape(Rectangle())
-        .gesture(createGlobalDragGesture(geometry: geometry))
+        .gesture(createGlobalDragGesture(geometry: geometry, subviewCount: subviews.count))
+        .onAppear {
+            self.initializeViewStates(count: subviews.count)
+        }
     }
     
     
-    private func createDraggableView(index: Int, geometry: GeometryProxy, isUpperArea: Bool) -> some View {
+    private func createDraggableView(subview: Subview, index: Int, geometry: GeometryProxy, isUpperArea: Bool) -> some View {
         ZStack {
-            Rectangle()
-                .fill(colors[index])
+            subview
                 .frame(width: geometry.size.width, height: geometry.size.height / 2)
             
-            Text("\(Int(viewStates[index].zIndex))")
+            Text("\(Int(index < viewStates.count ? viewStates[index].zIndex : Double(index)))")
                 .font(.title)
                 .fontWeight(.bold)
                 .foregroundColor(.white)
         }
-        .offset(viewStates[index].dragOffset)
-        .zIndex(viewStates[index].zIndex)
+        .offset(index < viewStates.count ? viewStates[index].dragOffset : .zero)
+        .zIndex(index < viewStates.count ? viewStates[index].zIndex : Double(index))
         .allowsHitTesting(false)
     }
     
@@ -84,9 +86,11 @@ public struct ZStackPagingLayout: View {
         }
     }
     
-    private func initializeViewStates() {
-        viewStates = colors.enumerated().map { index, _ in
-            ViewState(zIndex: Double(index))
+    private func initializeViewStates(count: Int) {
+        if viewStates.count != count {
+            viewStates = (0..<count).map { index in
+                ViewState(zIndex: Double(index))
+            }
         }
     }
     
@@ -133,7 +137,7 @@ public struct ZStackPagingLayout: View {
         }
     }
     
-    private func createGlobalDragGesture(geometry: GeometryProxy) -> some Gesture {
+    private func createGlobalDragGesture(geometry: GeometryProxy, subviewCount: Int) -> some Gesture {
         DragGesture()
             .onChanged { value in
                 if draggedViewIndex == nil {
@@ -194,7 +198,13 @@ public struct ZStackPagingLayout: View {
     }
 }
 
-@available(iOS 13.0, macOS 10.15, *)
+@available(iOS 18.0, macOS 15.0, *)
 #Preview {
-    ZStackPagingLayout(colors: [.red, .green, .blue, .orange, .purple])
+    ZStackPagingLayout {
+        Rectangle().fill(.red)
+        Rectangle().fill(.green)
+        Rectangle().fill(.blue)
+        Rectangle().fill(.orange)
+        Rectangle().fill(.purple)
+    }
 }
