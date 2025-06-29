@@ -36,18 +36,6 @@ public struct ZStackPagingLayout: View {
                     .frame(height: geometry.size.height / 2)
             }
             
-            // Area drag gestures
-            VStack(spacing: 0) {
-                Color.clear
-                    .contentShape(Rectangle())
-                    .gesture(createAreaDragGesture(geometry: geometry, isUpperArea: true))
-                    .frame(height: geometry.size.height / 2)
-                Color.clear
-                    .contentShape(Rectangle())
-                    .gesture(createAreaDragGesture(geometry: geometry, isUpperArea: false))
-                    .frame(height: geometry.size.height / 2)
-            }
-            
             // All views in the same ZStack to maintain global zIndex
             ForEach(viewStates.indices, id: \.self) { index in
                 createDraggableView(
@@ -63,6 +51,8 @@ public struct ZStackPagingLayout: View {
                 )
             }
         }
+        .contentShape(Rectangle())
+        .gesture(createGlobalDragGesture(geometry: geometry))
     }
     
     
@@ -143,7 +133,7 @@ public struct ZStackPagingLayout: View {
         }
     }
     
-    private func createAreaDragGesture(geometry: GeometryProxy, isUpperArea: Bool) -> some Gesture {
+    private func createGlobalDragGesture(geometry: GeometryProxy) -> some Gesture {
         DragGesture()
             .onChanged { value in
                 if draggedViewIndex == nil {
