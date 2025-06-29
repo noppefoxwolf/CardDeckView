@@ -115,22 +115,40 @@ public struct ZStackPagingLayout: View {
     
     private func handleDragEnded(index: Int, value: DragGesture.Value, geometry: GeometryProxy, isUpperArea: Bool) {
         let screenMidPoint = geometry.size.height / 2
-        let finalY: CGFloat
+        let currentY = (isUpperArea ? geometry.size.height / 4 : geometry.size.height * 3 / 4) + value.translation.height
+        
+        // Calculate velocity from predictedEndTranslation
+        let velocity = CGSize(
+            width: value.predictedEndTranslation.width - value.translation.width,
+            height: value.predictedEndTranslation.height - value.translation.height
+        )
+        
+        // Determine if area should change based on position and velocity
+        let shouldChangeArea: Bool
+        let velocityThreshold: CGFloat = 50
         
         if isUpperArea {
-            finalY = value.location.y + value.translation.height
+            shouldChangeArea = currentY > screenMidPoint || velocity.height > velocityThreshold
         } else {
-            finalY = value.location.y + value.translation.height + screenMidPoint
+            shouldChangeArea = currentY < screenMidPoint || velocity.height < -velocityThreshold
         }
         
-        if isUpperArea && finalY > screenMidPoint {
-            viewStates[index].isInUpperArea = false
-        } else if !isUpperArea && finalY < screenMidPoint {
-            viewStates[index].isInUpperArea = true
+        if shouldChangeArea {
+            // Use easeOut animation with velocity consideration
+            let duration = max(0.2, min(0.5, abs(velocity.height) / 1000))
+            
+            withAnimation(.easeOut(duration: duration)) {
+                viewStates[index].isInUpperArea = !isUpperArea
+                viewStates[index].dragOffset = .zero
+                viewStates[index].isDragging = false
+            }
+        } else {
+            // Animate back to original position
+            withAnimation(.easeOut(duration: 0.2)) {
+                viewStates[index].dragOffset = .zero
+                viewStates[index].isDragging = false
+            }
         }
-        
-        viewStates[index].dragOffset = .zero
-        viewStates[index].isDragging = false
     }
     
     private func createAreaDragGesture(geometry: GeometryProxy, isUpperArea: Bool) -> some Gesture {
