@@ -27,45 +27,44 @@ public struct ZStackPagingLayout: View {
     }
     
     private func createLayout(geometry: GeometryProxy) -> some View {
-        VStack(spacing: 0) {
-            createUpperArea(geometry: geometry)
-            createLowerArea(geometry: geometry)
-        }
-    }
-    
-    private func createUpperArea(geometry: GeometryProxy) -> some View {
         ZStack {
-            Color.clear
-                .contentShape(Rectangle())
-                .gesture(createAreaDragGesture(geometry: geometry, isUpperArea: true))
-            ForEach(upperAreaViews.indices, id: \.self) { i in
-                let index = upperAreaViews[i]
+            // Background areas
+            VStack(spacing: 0) {
+                Color.clear
+                    .frame(height: geometry.size.height / 2)
+                Color.gray.opacity(0.2)
+                    .frame(height: geometry.size.height / 2)
+            }
+            
+            // Area drag gestures
+            VStack(spacing: 0) {
+                Color.clear
+                    .contentShape(Rectangle())
+                    .gesture(createAreaDragGesture(geometry: geometry, isUpperArea: true))
+                    .frame(height: geometry.size.height / 2)
+                Color.clear
+                    .contentShape(Rectangle())
+                    .gesture(createAreaDragGesture(geometry: geometry, isUpperArea: false))
+                    .frame(height: geometry.size.height / 2)
+            }
+            
+            // All views in the same ZStack to maintain global zIndex
+            ForEach(viewStates.indices, id: \.self) { index in
                 createDraggableView(
                     index: index,
                     geometry: geometry,
-                    isUpperArea: true
+                    isUpperArea: viewStates[index].isInUpperArea
+                )
+                .position(
+                    x: geometry.size.width / 2,
+                    y: viewStates[index].isInUpperArea ? 
+                        geometry.size.height / 4 : 
+                        geometry.size.height * 3 / 4
                 )
             }
         }
-        .frame(height: geometry.size.height / 2)
     }
     
-    private func createLowerArea(geometry: GeometryProxy) -> some View {
-        ZStack {
-            Color.gray.opacity(0.2)
-                .contentShape(Rectangle())
-                .gesture(createAreaDragGesture(geometry: geometry, isUpperArea: false))
-            ForEach(lowerAreaViews.indices, id: \.self) { i in
-                let index = lowerAreaViews[i]
-                createDraggableView(
-                    index: index,
-                    geometry: geometry,
-                    isUpperArea: false
-                )
-            }
-        }
-        .frame(height: geometry.size.height / 2)
-    }
     
     private func createDraggableView(index: Int, geometry: GeometryProxy, isUpperArea: Bool) -> some View {
         ZStack {
