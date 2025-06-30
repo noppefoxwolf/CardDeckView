@@ -143,23 +143,28 @@ public struct ZStackView<Content: View>: View {
 
 @available(iOS 18.0, macOS 15.0, *)
 #Preview {
-    ZStackView {
-        ForEach(0..<3) { index in
-            Color.red
-                .overlay {
-                    Button {
-                        print("Action: \(index)")
-                    } label: {
-                        Text("Card: \(index)")
+    NavigationStack {
+        ZStackView {
+            ForEach(0..<3) { index in
+                Color.red
+                    .overlay {
+                        Button {
+                            print("Action: \(index)")
+                        } label: {
+                            Text("Card: \(index)")
+                        }
+                        .buttonStyle(.borderedProminent)
                     }
-                    .buttonStyle(.borderedProminent)
-                }
-                .shadow(radius: 30)
-        }
-        
-        Color.green
-            .overlay {
-                Text("Done")
+                    .shadow(radius: 30)
             }
-    }.ignoresSafeArea()
+            
+            Color.green
+                .overlay {
+                    Text("Done")
+                }
+        }
+        .ignoresSafeArea()
+        .navigationTitle("ZStackView")
+        .navigationBarTitleDisplayMode(.inline)
+    }
 }
