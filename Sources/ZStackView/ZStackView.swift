@@ -42,7 +42,7 @@ public struct ZStackView<Content: View>: View {
     @Previewable @State var currentPosition: String = "0"
     
     ZStackView {
-        ForEach(0..<3) { index in
+        ForEach(0..<5) { index in
             Color.red
                 .overlay {
                     VStack {
