@@ -21,7 +21,7 @@ extension ZStackView {
         .onAppear {
             initializeViewStates(count: subviews.count)
         }
-        .onChange(of: viewStates) { _, _ in
+        .onChange(of: state.lowerAreaViewIndices) { _, _ in
             updateFrontmostLowerAreaTag(subviews: subviews)
         }
     }
@@ -61,11 +61,11 @@ extension ZStackView {
     
     /// Gets the drag offset for a view at the given index
     private func getDragOffset(for index: Int) -> CGSize {
-        viewStates.indices.contains(index) ? viewStates[index].dragOffset : .zero
+        state.getDragOffset(for: index)
     }
     
     /// Determines if hit testing should be allowed for a view
     private func shouldAllowHitTesting(for index: Int) -> Bool {
-        !viewStates.indices.contains(index) || !viewStates[index].isDragging
+        !state.isDragging(index: index)
     }
 }

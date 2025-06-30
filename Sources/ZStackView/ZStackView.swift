@@ -9,8 +9,7 @@ public struct ZStackView<Content: View>: View {
     
     private let content: Content
     
-    @State var viewStates: [ViewState] = []
-    @State var draggedViewIndex: Int? = nil
+    @State var state = ZStackViewState()
     @Environment(\.zStackViewProxy) var proxy: (any ZStackViewProxyProtocol)?
     
     // MARK: - Initialization

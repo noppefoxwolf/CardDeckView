@@ -93,20 +93,20 @@ extension ZStackView {
     
     /// Moves a view from upper area to lower area
     private func moveViewFromUpperToLowerArea(index: Int) {
-        viewStates[index].isInUpperArea = false
+        state.moveViewFromUpperToLowerArea(index: index)
     }
     
     /// Reorganizes all views based on their z-index relative to the target
     private func reorganizeViewsByZIndex(targetIndex: Int) {
         let targetZIndex = getZIndex(for: targetIndex)
         
-        for index in viewStates.indices {
+        for index in state.viewStates.indices {
             if index != targetIndex {
                 let zIndex = getZIndex(for: index)
                 if zIndex > targetZIndex {
-                    viewStates[index].isInUpperArea = true
+                    state.setViewArea(index: index, isInUpperArea: true)
                 } else if zIndex < targetZIndex {
-                    viewStates[index].isInUpperArea = false
+                    state.setViewArea(index: index, isInUpperArea: false)
                 }
             }
         }

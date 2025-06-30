@@ -16,7 +16,7 @@ extension ZStackView {
     
     /// Handles drag gesture changes
     private func handleDragChanged(value: DragGesture.Value) {
-        if draggedViewIndex == nil {
+        if state.draggedViewIndex == nil {
             selectViewForDragging(dragValue: value)
         }
         
@@ -25,7 +25,7 @@ extension ZStackView {
     
     /// Handles drag gesture ending
     private func handleDragEnded(value: DragGesture.Value, geometry: GeometryProxy) {
-        guard let index = draggedViewIndex else { return }
+        guard let index = state.draggedViewIndex else { return }
         
         let currentIsUpperArea = isInUpperArea(index: index)
         finalizeDragMovement(
@@ -34,25 +34,20 @@ extension ZStackView {
             geometry: geometry,
             isUpperArea: currentIsUpperArea
         )
-        
-        draggedViewIndex = nil
     }
     
     /// Selects which view should be dragged based on the drag location
     private func selectViewForDragging(dragValue: DragGesture.Value) {
-        let targetViews = dragValue.translation.height > 0 ? upperAreaViewIndices : lowerAreaViewIndices
+        let targetViews = state.getTargetViewIndices(for: dragValue.translation.height)
         
-        if let nearestIndex = findNearestViewIndex(to: dragValue.startLocation, in: targetViews) {
-            draggedViewIndex = nearestIndex
-            viewStates[nearestIndex].isDragging = true
+        if let nearestIndex = state.findNearestViewIndex(to: dragValue.startLocation, in: targetViews) {
+            state.startDragging(viewIndex: nearestIndex)
         }
     }
     
     /// Updates the drag offset for the currently dragged view
     private func updateDragOffset(value: DragGesture.Value) {
-        if let index = draggedViewIndex {
-            viewStates[index].dragOffset = CGSize(width: 0, height: value.translation.height)
-        }
+        state.updateDragOffset(CGSize(width: 0, height: value.translation.height))
     }
     
     /// Finalizes the drag movement with animation
@@ -66,29 +61,18 @@ extension ZStackView {
         let velocity = value.predictedEndTranslation.height - value.translation.height
         let velocityThreshold: CGFloat = 50
         
-        let shouldChangeArea = isUpperArea ?
-            (currentY > 0 || velocity > velocityThreshold) :
-            (currentY < 0 || velocity < -velocityThreshold)
+        let shouldChangeArea = state.shouldChangeArea(
+            index: index,
+            currentY: currentY,
+            velocity: velocity,
+            velocityThreshold: velocityThreshold
+        )
         
         let duration = shouldChangeArea ? max(0.2, min(0.5, abs(velocity) / 1000)) : 0.2
         
         withAnimation(.easeOut(duration: duration)) {
-            if shouldChangeArea {
-                viewStates[index].isInUpperArea = !isUpperArea
-            }
-            viewStates[index].dragOffset = .zero
-            viewStates[index].isDragging = false
+            state.endDragging(shouldChangeArea: shouldChangeArea)
         }
     }
     
-    /// Finds the nearest view to drag from the given location
-    private func findNearestViewIndex(to location: CGPoint, in viewIndices: [Int]) -> Int? {
-        guard !viewIndices.isEmpty else { return nil }
-        
-        let isUpperAreaViews = viewIndices.allSatisfy { viewStates[$0].isInUpperArea }
-        
-        return isUpperAreaViews ?
-            viewIndices.max() :
-            viewIndices.min()
-    }
 }
