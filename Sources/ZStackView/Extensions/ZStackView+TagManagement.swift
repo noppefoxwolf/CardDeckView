@@ -42,7 +42,7 @@ extension ZStackView {
         
         guard let targetIndex = targetIndex else { return }
         
-        let targetIsInUpperArea = isInUpperArea(index: targetIndex)
+        let targetIsInUpperArea = state.isInUpperArea(index: targetIndex)
         
         withAnimation(.easeInOut(duration: 0.3)) {
             if targetIsInUpperArea {
@@ -83,9 +83,9 @@ extension ZStackView {
     
     /// Finds the index of the frontmost view in the lower area
     private func findFrontmostLowerAreaViewIndex() -> Int? {
-        lowerAreaViewIndices.max { index1, index2 in
-            let zIndex1 = getZIndex(for: index1)
-            let zIndex2 = getZIndex(for: index2)
+        state.lowerAreaViewIndices.max { index1, index2 in
+            let zIndex1 = state.getZIndex(for: index1)
+            let zIndex2 = state.getZIndex(for: index2)
             return zIndex1 < zIndex2
         }
     }
@@ -98,11 +98,11 @@ extension ZStackView {
     
     /// Reorganizes all views based on their z-index relative to the target
     private func reorganizeViewsByZIndex(targetIndex: Int) {
-        let targetZIndex = getZIndex(for: targetIndex)
+        let targetZIndex = state.getZIndex(for: targetIndex)
         
         for index in state.viewStates.indices {
             if index != targetIndex {
-                let zIndex = getZIndex(for: index)
+                let zIndex = state.getZIndex(for: index)
                 if zIndex > targetZIndex {
                     state.setViewArea(index: index, isInUpperArea: true)
                 } else if zIndex < targetZIndex {

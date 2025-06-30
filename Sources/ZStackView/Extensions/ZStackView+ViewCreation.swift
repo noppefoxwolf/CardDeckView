@@ -32,7 +32,7 @@ extension ZStackView {
         index: Int,
         geometry: GeometryProxy
     ) -> some View {
-        let isUpperArea = isInUpperArea(index: index)
+        let isUpperArea = state.isInUpperArea(index: index)
         
         return createStyledView(subview: subview, index: index, geometry: geometry)
             .position(
@@ -49,9 +49,9 @@ extension ZStackView {
     ) -> some View {
         subview
             .frame(width: geometry.size.width, height: geometry.size.height)
-            .offset(getDragOffset(for: index))
-            .zIndex(getZIndex(for: index))
-            .allowsHitTesting(shouldAllowHitTesting(for: index))
+            .offset(state.getDragOffset(for: index))
+            .zIndex(state.getZIndex(for: index))
+            .allowsHitTesting(!state.isDragging(index: index))
     }
     
     /// Calculates the Y position for a view based on its area
@@ -59,13 +59,4 @@ extension ZStackView {
         isUpperArea ? -geometry.size.height / 2 : geometry.size.height / 2
     }
     
-    /// Gets the drag offset for a view at the given index
-    private func getDragOffset(for index: Int) -> CGSize {
-        state.getDragOffset(for: index)
-    }
-    
-    /// Determines if hit testing should be allowed for a view
-    private func shouldAllowHitTesting(for index: Int) -> Bool {
-        !state.isDragging(index: index)
-    }
 }

@@ -27,7 +27,7 @@ extension ZStackView {
     private func handleDragEnded(value: DragGesture.Value, geometry: GeometryProxy) {
         guard let index = state.draggedViewIndex else { return }
         
-        let currentIsUpperArea = isInUpperArea(index: index)
+        let currentIsUpperArea = state.isInUpperArea(index: index)
         finalizeDragMovement(
             index: index,
             value: value,
@@ -38,7 +38,7 @@ extension ZStackView {
     
     /// Selects which view should be dragged based on the drag location
     private func selectViewForDragging(dragValue: DragGesture.Value) {
-        let targetViews = state.getTargetViewIndices(for: dragValue.translation.height)
+        let targetViews = dragValue.translation.height > 0 ? state.upperAreaViewIndices : state.lowerAreaViewIndices
         
         if let nearestIndex = state.findNearestViewIndex(to: dragValue.startLocation, in: targetViews) {
             state.startDragging(viewIndex: nearestIndex)

@@ -106,10 +106,6 @@ final class ZStackViewState {
             viewIndices.min()
     }
     
-    /// Determines which views should be considered for dragging based on direction
-    func getTargetViewIndices(for dragDirection: CGFloat) -> [Int] {
-        return dragDirection > 0 ? upperAreaViewIndices : lowerAreaViewIndices
-    }
     
     /// Calculates if a view should change areas based on position and velocity
     func shouldChangeArea(

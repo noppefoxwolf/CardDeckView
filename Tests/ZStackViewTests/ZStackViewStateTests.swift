@@ -195,8 +195,8 @@ func testGetTargetViewIndices() {
     state.startDragging(viewIndex: 1)
     state.endDragging(shouldChangeArea: true)
     
-    let upwardDrag = state.getTargetViewIndices(for: 10.0) // positive = upward
-    let downwardDrag = state.getTargetViewIndices(for: -10.0) // negative = downward
+    let upwardDrag = 10.0 > 0 ? state.upperAreaViewIndices : state.lowerAreaViewIndices // positive = upward
+    let downwardDrag = -10.0 > 0 ? state.upperAreaViewIndices : state.lowerAreaViewIndices // negative = downward
     
     #expect(upwardDrag == [1]) // upper area indices
     #expect(downwardDrag.sorted() == [0, 2]) // lower area indices
