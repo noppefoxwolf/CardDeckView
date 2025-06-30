@@ -2,9 +2,10 @@ import SwiftUI
 
 @MainActor
 protocol ZStackViewProxyProtocol: Sendable {
-    var tagType: Any.Type { get }
-    func setFrontmostLowerAreaTagHandler<T: Hashable>(_ handler: @escaping (T?) -> Void)
-    func updateFrontmostLowerAreaTag<T: Hashable>(_ tag: T?)
-    func extractTag<T: Hashable>(from subviews: SubviewsCollection, at index: Int?, as type: T.Type) -> T?
-    func findViewIndex<T: Hashable>(with targetTag: T, in subviews: SubviewsCollection) -> Int?
+    associatedtype TagType: Hashable
+    var tagType: TagType.Type { get }
+    func setFrontmostLowerAreaTagHandler(_ handler: @escaping (TagType?) -> Void)
+    func updateFrontmostLowerAreaTag(_ tag: TagType?)
+    func extractTag(from subviews: SubviewsCollection, at index: Int?) -> TagType?
+    func findViewIndex(with targetTag: TagType, in subviews: SubviewsCollection) -> Int?
 }

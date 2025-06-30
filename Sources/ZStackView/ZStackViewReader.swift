@@ -21,11 +21,13 @@ public struct ZStackViewReader<Tag: Hashable, Content: View>: View {
 @available(iOS 18.0, macOS 15.0, *)
 public class ZStackViewProxy<Tag: Hashable>: ObservableObject, ZStackViewProxyProtocol {
     
+    typealias TagType = Tag
+    
     @Published public var frontmostLowerAreaTag: Tag?
     
     internal var setFrontmostLowerAreaTagHandler: ((Tag?) -> Void)?
     
-    public var tagType: Any.Type {
+    public var tagType: Tag.Type {
         return Tag.self
     }
     
@@ -35,32 +37,26 @@ public class ZStackViewProxy<Tag: Hashable>: ObservableObject, ZStackViewProxyPr
         setFrontmostLowerAreaTagHandler?(tag)
     }
     
-    func setFrontmostLowerAreaTagHandler<T: Hashable>(_ handler: @escaping (T?) -> Void) {
-        if T.self == Tag.self {
-            setFrontmostLowerAreaTagHandler = { tag in
-                handler(tag as? T)
-            }
-        }
+    func setFrontmostLowerAreaTagHandler(_ handler: @escaping (Tag?) -> Void) {
+        setFrontmostLowerAreaTagHandler = handler
     }
     
-    func updateFrontmostLowerAreaTag<T: Hashable>(_ tag: T?) {
-        if let tagValue = tag as? Tag {
-            frontmostLowerAreaTag = tagValue
-        }
+    func updateFrontmostLowerAreaTag(_ tag: Tag?) {
+        frontmostLowerAreaTag = tag
     }
     
-    func extractTag<T: Hashable>(from subviews: SubviewsCollection, at index: Int?, as type: T.Type) -> T? {
+    func extractTag(from subviews: SubviewsCollection, at index: Int?) -> Tag? {
         guard let index = index,
               subviews.indices.contains(index) else {
             return nil
         }
         
-        return subviews[index].containerValues.tag(for: type)
+        return subviews[index].containerValues.tag(for: Tag.self)
     }
     
-    func findViewIndex<T: Hashable>(with targetTag: T, in subviews: SubviewsCollection) -> Int? {
+    func findViewIndex(with targetTag: Tag, in subviews: SubviewsCollection) -> Int? {
         for index in subviews.indices {
-            if let tag = subviews[index].containerValues.tag(for: T.self),
+            if let tag = subviews[index].containerValues.tag(for: Tag.self),
                tag == targetTag {
                 return index
             }

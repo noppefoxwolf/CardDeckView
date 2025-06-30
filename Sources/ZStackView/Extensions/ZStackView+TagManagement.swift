@@ -21,45 +21,26 @@ extension ZStackView {
         updateProxyFrontmostTag(from: subviews, at: frontmostIndex, proxy: proxy)
     }
     
-    /// Sets up the proxy tag handler using type erasure
-    private func setupProxyTagHandler(proxy: any ZStackViewProxyProtocol, subviews: SubviewsCollection) {
-        let tagType = proxy.tagType
-        
-        if tagType == String.self {
-            proxy.setFrontmostLowerAreaTagHandler { (tag: String?) in
-                self.handleFrontmostTagChange(newTag: tag, subviews: subviews, proxy: proxy)
-            }
-        } else if tagType == Int.self {
-            proxy.setFrontmostLowerAreaTagHandler { (tag: Int?) in
-                self.handleFrontmostTagChange(newTag: tag, subviews: subviews, proxy: proxy)
-            }
-        } else if tagType == UUID.self {
-            proxy.setFrontmostLowerAreaTagHandler { (tag: UUID?) in
-                self.handleFrontmostTagChange(newTag: tag, subviews: subviews, proxy: proxy)
-            }
+    /// Sets up the proxy tag handler
+    private func setupProxyTagHandler<Proxy: ZStackViewProxyProtocol>(proxy: Proxy, subviews: SubviewsCollection) {
+        proxy.setFrontmostLowerAreaTagHandler { tag in
+            self.handleFrontmostTagChange(newTag: tag, subviews: subviews, proxy: proxy)
         }
     }
     
-    /// Updates the proxy's frontmost tag using generic extraction
-    private func updateProxyFrontmostTag(from subviews: SubviewsCollection, at index: Int?, proxy: any ZStackViewProxyProtocol) {
-        let tagType = proxy.tagType
-        
-        if tagType == String.self {
-            let tag = proxy.extractTag(from: subviews, at: index, as: String.self)
-            proxy.updateFrontmostLowerAreaTag(tag)
-        } else if tagType == Int.self {
-            let tag = proxy.extractTag(from: subviews, at: index, as: Int.self)
-            proxy.updateFrontmostLowerAreaTag(tag)
-        } else if tagType == UUID.self {
-            let tag = proxy.extractTag(from: subviews, at: index, as: UUID.self)
-            proxy.updateFrontmostLowerAreaTag(tag)
-        }
+    /// Updates the proxy's frontmost tag
+    private func updateProxyFrontmostTag<Proxy: ZStackViewProxyProtocol>(from subviews: SubviewsCollection, at index: Int?, proxy: Proxy) {
+        let tag = proxy.extractTag(from: subviews, at: index)
+        proxy.updateFrontmostLowerAreaTag(tag)
     }
     
     /// Handles programmatic changes to the frontmost tag
-    private func handleFrontmostTagChange<T: Hashable>(newTag: T?, subviews: SubviewsCollection, proxy: any ZStackViewProxyProtocol) {
+    private func handleFrontmostTagChange<Tag: Hashable, Proxy: ZStackViewProxyProtocol>(newTag: Tag?, subviews: SubviewsCollection, proxy: Proxy) where Tag == Proxy.TagType {
         guard let targetTag = newTag else { return }
-        guard let targetIndex = proxy.findViewIndex(with: targetTag, in: subviews) else { return }
+        
+        let targetIndex: Int? = proxy.findViewIndex(with: targetTag, in: subviews)
+        
+        guard let targetIndex = targetIndex else { return }
         
         let targetIsInUpperArea = isInUpperArea(index: targetIndex)
         
@@ -72,6 +53,32 @@ extension ZStackView {
         }
         
         updateFrontmostLowerAreaTag(subviews: subviews)
+    }
+    
+    /// Updates proxy using AnyHashable fallback for uncommon types
+    private func updateProxyWithAnyHashable<Tag: Hashable>(tagType: Tag.Type, subviews: SubviewsCollection, index: Int) {
+        if extractTagWithReflection(from: subviews, at: index, type: tagType) != nil {
+            // We can't call updateFrontmostLowerAreaTag directly due to associatedtype limitations
+            // The proxy will handle this through its own implementation
+            print("Warning: Using AnyHashable fallback for tag type: \(tagType)")
+        }
+    }
+    
+    /// Finds view index using AnyHashable fallback for uncommon types
+    private func findViewIndexWithAnyHashable<Tag: Hashable, Proxy: ZStackViewProxyProtocol>(targetTag: Tag, subviews: SubviewsCollection, proxy: Proxy) -> Int? where Tag == Proxy.TagType {
+        let tagType = proxy.tagType
+        
+        for index in subviews.indices {
+            if let tag = extractTagWithReflection(from: subviews, at: index, type: tagType), tag == targetTag {
+                return index
+            }
+        }
+        return nil
+    }
+    
+    /// Extracts tag using reflection for any Hashable type
+    private func extractTagWithReflection<Tag: Hashable>(from subviews: SubviewsCollection, at index: Int, type: Tag.Type) -> Tag? {
+        subviews[index].containerValues.tag(for: Tag.self)
     }
     
     /// Finds the index of the frontmost view in the lower area
