@@ -3,7 +3,7 @@ import SwiftUI
 /// A SwiftUI view that provides an interactive ZStack with drag-and-drop functionality
 /// for reordering views between upper and lower areas.
 @available(iOS 18.0, macOS 15.0, *)
-public struct ZStackView<Content: View, Tag: Hashable>: View {
+public struct ZStackView<Content: View>: View {
     
     // MARK: - Properties
     
@@ -11,19 +11,13 @@ public struct ZStackView<Content: View, Tag: Hashable>: View {
     
     @State var viewStates: [ViewState] = []
     @State var draggedViewIndex: Int? = nil
-    @Binding var frontmostLowerAreaTag: Tag?
+    @Environment(\.zStackViewProxy) var proxy: (any ZStackViewProxyProtocol)?
     
     // MARK: - Initialization
     
-    /// Creates a new ZStackView with optional frontmost tag binding
-    /// - Parameters:
-    ///   - frontmostLowerAreaTag: Binding to track the frontmost view tag in the lower area
-    ///   - content: The views to display in the stack
-    public init(
-        frontmostLowerAreaTag: Binding<Tag?> = .constant(nil),
-        @ViewBuilder content: () -> Content
-    ) {
-        self._frontmostLowerAreaTag = frontmostLowerAreaTag
+    /// Creates a new ZStackView
+    /// - Parameter content: The views to display in the stack
+    public init(@ViewBuilder content: () -> Content) {
         self.content = content()
     }
     
@@ -34,10 +28,7 @@ public struct ZStackView<Content: View, Tag: Hashable>: View {
             Group(subviews: content) { subviews in
                 createMainLayout(geometry: geometry, subviews: subviews)
                     .onAppear {
-                        updateFrontmostLowerAreaTag(subviews: subviews)
-                    }
-                    .onChange(of: frontmostLowerAreaTag) { _, newTag in
-                        handleFrontmostTagChange(newTag: newTag, subviews: subviews)
+                        setupProxyConnection(subviews: subviews)
                     }
             }
         }
@@ -48,16 +39,14 @@ public struct ZStackView<Content: View, Tag: Hashable>: View {
 
 @available(iOS 18.0, macOS 15.0, *)
 #Preview {
-    @Previewable @State var frontmostTag: String? = nil
-    
-    return NavigationStack {
-        ZStackView(frontmostLowerAreaTag: $frontmostTag) {
+    ZStackViewReader { proxy in
+        ZStackView {
             ForEach(0..<3) { index in
                 Color.red
                     .overlay {
                         Button {
                             print("Action: \(index)")
-                            frontmostTag = "1"
+                            proxy.slideTo("1")
                         } label: {
                             Text("Card: \(index)")
                         }
@@ -73,20 +62,9 @@ public struct ZStackView<Content: View, Tag: Hashable>: View {
                 }
                 .tag("done")
         }
-        .ignoresSafeArea()
-        .navigationTitle("ZStackView")
-        #if os(iOS)
-        .navigationBarTitleDisplayMode(.inline)
-        #endif
-        .toolbar {
-            ToolbarItem(placement: .primaryAction) {
-                Button("Debug") {
-                    print("Frontmost lower area tag: \(frontmostTag ?? "nil")")
-                }
-            }
-        }
         .overlay(alignment: .bottom) {
-            Text(frontmostTag ?? "nil")
+            Text("\(proxy.frontmostLowerAreaTag ?? "nil")")
         }
     }
+    .ignoresSafeArea()
 }
