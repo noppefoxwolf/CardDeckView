@@ -62,7 +62,7 @@ public struct ZStackView<Content: View>: View {
             .frame(width: geometry.size.width, height: geometry.size.height)
             .offset(viewStates.indices.contains(index) ? viewStates[index].dragOffset : .zero)
             .zIndex(viewStates.indices.contains(index) ? viewStates[index].zIndex : Double(index))
-            .allowsHitTesting(false)
+            .allowsHitTesting(!viewStates.indices.contains(index) || !viewStates[index].isDragging)
     }
     
     private var upperAreaViews: [Int] {
@@ -139,25 +139,18 @@ public struct ZStackView<Content: View>: View {
             viewIndices.max() :
             viewIndices.min()
     }
-    
-    private func distanceToView(index: Int, from location: CGPoint) -> CGFloat {
-        let viewCenter = CGPoint(x: 50, y: 50)
-        let dx = location.x - viewCenter.x
-        let dy = location.y - viewCenter.y
-        return sqrt(dx * dx + dy * dy)
-    }
 }
 
 @available(iOS 18.0, macOS 15.0, *)
 #Preview {
     ZStackView {
-        ForEach(0..<3) { i in
+        ForEach(0..<3) { index in
             Color.red
                 .overlay {
                     Button {
-                        print("Action")
+                        print("Action: \(index)")
                     } label: {
-                        Text("Card: \(i)")
+                        Text("Card: \(index)")
                     }
                     .buttonStyle(.borderedProminent)
                 }
