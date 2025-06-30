@@ -88,7 +88,7 @@ final class ZStackViewState {
             // Upper area views can move freely
             constrainedOffset = offset
         } else {
-            // Lower area views: constrain y-movement to 0 or greater (prevent upward movement)
+            // Lower area views: constrain y-movement to 0 or less (prevent downward movement)
             constrainedOffset = CGSize(
                 width: offset.width,
                 height: min(0, offset.height)
