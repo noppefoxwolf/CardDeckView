@@ -33,6 +33,9 @@ public struct ZStackView<Content: View, Tag: Hashable>: View {
                     .onAppear {
                         updateLowerAreaTags(subviews: subviews)
                     }
+                    .onChange(of: frontmostLowerAreaTag) { _, newTag in
+                        handleFrontmostTagChange(newTag: newTag, subviews: subviews)
+                    }
             }
         }
         .onChange(of: viewStates) { _, newValue in
@@ -174,6 +177,42 @@ public struct ZStackView<Content: View, Tag: Hashable>: View {
             frontmostLowerAreaTag = newTag
         }
     }
+    
+    private func handleFrontmostTagChange(newTag: Tag?, subviews: SubviewsCollection) {
+        guard let targetTag = newTag else { return }
+        
+        // Find the index of the view with the target tag
+        var targetIndex: Int? = nil
+        for index in subviews.indices {
+            if let tag = subviews[index].containerValues.tag(for: Tag.self),
+               tag == targetTag {
+                targetIndex = index
+                break
+            }
+        }
+        
+        guard let targetIdx = targetIndex else { return }
+        
+        let targetIsInUpperArea = viewStates.indices.contains(targetIdx) && viewStates[targetIdx].isInUpperArea
+        let targetZIndex = viewStates.indices.contains(targetIdx) ? viewStates[targetIdx].zIndex : Double(targetIdx)
+        
+        withAnimation(.easeInOut(duration: 0.3)) {
+            if targetIsInUpperArea {
+                // If target is in upper area, move it to lower area
+                viewStates[targetIdx].isInUpperArea = false
+            } else {
+                // If target is in lower area, move views with higher zIndex to upper area
+                for index in lowerAreaViews {
+                    if index != targetIdx {
+                        let zIndex = viewStates.indices.contains(index) ? viewStates[index].zIndex : Double(index)
+                        if zIndex > targetZIndex {
+                            viewStates[index].isInUpperArea = true
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 @available(iOS 18.0, macOS 15.0, *)
@@ -187,7 +226,7 @@ public struct ZStackView<Content: View, Tag: Hashable>: View {
                     .overlay {
                         Button {
                             print("Action: \(index)")
-                            frontmostTag = "done"
+                            frontmostTag = "1"
                         } label: {
                             Text("Card: \(index)")
                         }
