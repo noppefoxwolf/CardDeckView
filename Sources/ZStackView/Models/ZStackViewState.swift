@@ -82,7 +82,20 @@ final class ZStackViewState {
         guard let index = draggedViewIndex,
             viewStates.indices.contains(index)
         else { return }
-        viewStates[index].dragOffset = offset
+        
+        let constrainedOffset: CGSize
+        if viewStates[index].isInUpperArea {
+            // Upper area views can move freely
+            constrainedOffset = offset
+        } else {
+            // Lower area views: constrain y-movement to 0 or greater (prevent upward movement)
+            constrainedOffset = CGSize(
+                width: offset.width,
+                height: min(0, offset.height)
+            )
+        }
+        
+        viewStates[index].dragOffset = constrainedOffset
     }
 
     /// Ends dragging and optionally moves the view to a different area
