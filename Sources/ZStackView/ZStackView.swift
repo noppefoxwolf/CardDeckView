@@ -39,32 +39,42 @@ public struct ZStackView<Content: View>: View {
 
 @available(iOS 18.0, macOS 15.0, *)
 #Preview {
-    ZStackViewReader { proxy in
-        ZStackView {
-            ForEach(0..<3) { index in
-                Color.red
-                    .overlay {
+    @Previewable @State var currentPosition: String = "0"
+    
+    ZStackView {
+        ForEach(0..<3) { index in
+            Color.red
+                .overlay {
+                    VStack {
                         Button {
                             print("Action: \(index)")
-                            proxy.slideTo("1")
+                            currentPosition = "1"
                         } label: {
                             Text("Card: \(index)")
                         }
                         .buttonStyle(.borderedProminent)
+                        
+                        Text("Current: \(currentPosition)")
+                            .foregroundColor(.white)
                     }
-                    .shadow(radius: 30)
-                    .tag("\(index)")
-            }
-            
-            Color.green
-                .overlay {
-                    Text("Done")
                 }
-                .tag("done")
+                .shadow(radius: 30)
+                .tag("\(index)")
         }
-        .overlay(alignment: .bottom) {
-            Text("\(proxy.frontmostLowerAreaTag ?? "nil")")
-        }
+        
+        Color.green
+            .overlay {
+                Text("Done")
+            }
+            .tag("done")
+    }
+    .stackPosition(tag: $currentPosition)
+    .overlay(alignment: .bottom) {
+        Text("Current Position: \(currentPosition)")
+            .padding()
+            .background(Color.black.opacity(0.7))
+            .foregroundColor(.white)
+            .cornerRadius(8)
     }
     .ignoresSafeArea()
 }
