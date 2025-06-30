@@ -152,13 +152,16 @@ public struct ZStackView<Content: View>: View {
 #Preview {
     ZStackView {
         ForEach(0..<3) { i in
-            Rectangle()
-                .fill(Color.red)
+            Color.red
                 .overlay {
-                    Text("\(i)")
+                    Button {
+                        print("Action")
+                    } label: {
+                        Text("Card: \(i)")
+                    }
+                    .buttonStyle(.borderedProminent)
                 }
-
-                .shadow(radius: 20)
+                .shadow(radius: 30)
         }
         
         Color.green
