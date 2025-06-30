@@ -39,39 +39,52 @@ public struct ZStackView<Content: View>: View {
 #Preview {
     @Previewable @State var currentPosition: String = "0"
 
-    ZStackView {
-        ForEach(0..<5) { index in
-            Color.red
-                .overlay {
-                    VStack {
-                        Button {
-                            print("Action: \(index)")
-                            currentPosition = "1"
-                        } label: {
-                            Text("Card: \(index)")
-                        }
-                        .buttonStyle(.borderedProminent)
-
-                        Text("Current: \(currentPosition)")
-                            .foregroundColor(.white)
+    TabView {
+        Tab {
+            NavigationStack {
+                ZStackView {
+                    ForEach(0..<5) { index in
+                        Text("aaa")
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                            .background {
+                                Color.red.ignoresSafeArea()
+                                    .shadow(radius: 10)
+                            }
+            //            Color.red
+            //                .overlay {
+            //                    VStack {
+            //                        Button {
+            //                            print("Action: \(index)")
+            //                            currentPosition = "1"
+            //                        } label: {
+            //                            Text("Card: \(index)")
+            //                        }
+            //                        .buttonStyle(.borderedProminent)
+            //
+            //                        Text("Current: \(currentPosition)")
+            //                            .foregroundColor(.white)
+            //                    }
+            //                }
+            //                .shadow(radius: 30)
+            //                .tag("\(index)")
                     }
-                }
-                .shadow(radius: 30)
-                .tag("\(index)")
-        }
 
-        Color.green
-            .overlay {
-                Text("Done")
+                    Color.green
+                        .overlay {
+                            Text("Done")
+                        }
+                        .tag("done")
+                }
+                .stackPosition(tag: $currentPosition)
+                .safeAreaInset(edge: .bottom, content: {
+                    Text("Current Position: \(currentPosition)")
+                        .background(Color.black.opacity(0.7))
+                        .foregroundColor(.white)
+                        .cornerRadius(8)
+                        .padding()
+                })
+                .navigationTitle("ZStackView")
             }
-            .tag("done")
-    }
-    .stackPosition(tag: $currentPosition)
-    .overlay(alignment: .bottom) {
-        Text("Current Position: \(currentPosition)")
-            .padding()
-            .background(Color.black.opacity(0.7))
-            .foregroundColor(.white)
-            .cornerRadius(8)
+        }
     }
 }
