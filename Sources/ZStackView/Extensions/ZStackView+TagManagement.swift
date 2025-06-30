@@ -47,9 +47,9 @@ extension ZStackView {
         withAnimation(.easeInOut(duration: 0.3)) {
             if targetIsInUpperArea {
                 moveViewFromUpperToLowerArea(index: targetIndex)
-            } else {
-                moveHigherZIndexViewsToUpperArea(targetIndex: targetIndex)
             }
+            // Always reorganize all views based on z-index relative to target
+            reorganizeViewsByZIndex(targetIndex: targetIndex)
         }
         
         updateFrontmostLowerAreaTag(subviews: subviews)
@@ -96,17 +96,24 @@ extension ZStackView {
         viewStates[index].isInUpperArea = false
     }
     
-    /// Moves views with higher z-index than target to upper area
-    private func moveHigherZIndexViewsToUpperArea(targetIndex: Int) {
+    /// Reorganizes all views based on their z-index relative to the target
+    private func reorganizeViewsByZIndex(targetIndex: Int) {
         let targetZIndex = getZIndex(for: targetIndex)
         
-        for index in lowerAreaViewIndices {
+        for index in viewStates.indices {
             if index != targetIndex {
                 let zIndex = getZIndex(for: index)
                 if zIndex > targetZIndex {
                     viewStates[index].isInUpperArea = true
+                } else if zIndex < targetZIndex {
+                    viewStates[index].isInUpperArea = false
                 }
             }
         }
+    }
+    
+    /// Moves views with higher z-index than target to upper area and lower z-index views to lower area
+    private func moveHigherZIndexViewsToUpperArea(targetIndex: Int) {
+        reorganizeViewsByZIndex(targetIndex: targetIndex)
     }
 }
