@@ -1,14 +1,15 @@
 import SwiftUI
 
-struct ViewState: Sendable {
+struct ViewState: Sendable, Equatable {
     var isInUpperArea: Bool = false
     var dragOffset: CGSize = .zero
     var isDragging: Bool = false
     var zIndex: Double
 }
 
+
 @available(iOS 18.0, macOS 15.0, *)
-public struct ZStackView<Content: View>: View {
+public struct ZStackView<Content: View, Tag: Hashable>: View {
     private let content: Content
     
     @State
@@ -17,7 +18,11 @@ public struct ZStackView<Content: View>: View {
     @State
     var draggedViewIndex: Int? = nil
     
-    public init(@ViewBuilder content: () -> Content) {
+    @Binding
+    var frontmostLowerAreaTag: Tag?
+    
+    public init(frontmostLowerAreaTag: Binding<Tag?> = .constant(nil), @ViewBuilder content: () -> Content) {
+        self._frontmostLowerAreaTag = frontmostLowerAreaTag
         self.content = content()
     }
     
@@ -25,7 +30,13 @@ public struct ZStackView<Content: View>: View {
         GeometryReader { geometry in
             Group(subviews: content) { subviews in
                 self.createLayout(geometry: geometry, subviews: subviews)
+                    .onAppear {
+                        updateLowerAreaTags(subviews: subviews)
+                    }
             }
+        }
+        .onChange(of: viewStates) { _, newValue in
+            // We need subviews to update tags, will be called from createLayout
         }
     }
     
@@ -53,6 +64,9 @@ public struct ZStackView<Content: View>: View {
         .gesture(createGlobalDragGesture(geometry: geometry))
         .onAppear {
             initializeViewStates(count: subviews.count)
+        }
+        .onChange(of: viewStates) { _, _ in
+            updateLowerAreaTags(subviews: subviews)
         }
     }
     
@@ -139,32 +153,70 @@ public struct ZStackView<Content: View>: View {
             viewIndices.max() :
             viewIndices.min()
     }
+    
+    
+    private func updateLowerAreaTags(subviews: SubviewsCollection) {
+        // Find the frontmost (highest zIndex) view in lower area
+        let frontmostIndex = lowerAreaViews.max { index1, index2 in
+            let zIndex1 = viewStates.indices.contains(index1) ? viewStates[index1].zIndex : Double(index1)
+            let zIndex2 = viewStates.indices.contains(index2) ? viewStates[index2].zIndex : Double(index2)
+            return zIndex1 < zIndex2
+        }
+        
+        var newTag: Tag? = nil
+        if let index = frontmostIndex,
+           subviews.indices.contains(index),
+           let tag = subviews[index].containerValues.tag(for: Tag.self) {
+            newTag = tag
+        }
+        
+        if frontmostLowerAreaTag != newTag {
+            frontmostLowerAreaTag = newTag
+        }
+    }
 }
 
 @available(iOS 18.0, macOS 15.0, *)
 #Preview {
-    NavigationStack {
-        ZStackView {
+    @Previewable @State var frontmostTag: String? = nil
+    
+    return NavigationStack {
+        ZStackView(frontmostLowerAreaTag: $frontmostTag) {
             ForEach(0..<3) { index in
                 Color.red
                     .overlay {
                         Button {
                             print("Action: \(index)")
+                            frontmostTag = "done"
                         } label: {
                             Text("Card: \(index)")
                         }
                         .buttonStyle(.borderedProminent)
                     }
                     .shadow(radius: 30)
+                    .tag("\(index)")
             }
             
             Color.green
                 .overlay {
                     Text("Done")
                 }
+                .tag("done")
         }
         .ignoresSafeArea()
         .navigationTitle("ZStackView")
+        #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
+        #endif
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                Button("Debug") {
+                    print("Frontmost lower area tag: \(frontmostTag ?? "nil")")
+                }
+            }
+        }
+        .overlay(alignment: .bottom) {
+            Text("\(frontmostTag)")
+        }
     }
 }
