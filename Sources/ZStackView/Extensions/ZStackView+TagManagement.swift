@@ -5,33 +5,61 @@ extension ZStackView {
     
     /// Updates the frontmost lower area tag based on current view states
     func updateFrontmostLowerAreaTag(subviews: SubviewsCollection) {
+        guard let proxy = proxy else { return }
+        
         let frontmostIndex = findFrontmostLowerAreaViewIndex()
-        let newTag = extractTag(from: subviews, at: frontmostIndex)
-        updateProxyFrontmostTag(newTag)
+        updateProxyFrontmostTag(from: subviews, at: frontmostIndex, proxy: proxy)
     }
     
     /// Sets up the proxy connection for ZStackViewReader
     func setupProxyConnection(subviews: SubviewsCollection) {
         guard let proxy = proxy else { return }
         
-        proxy.setFrontmostLowerAreaTagHandler { tag in
-            self.handleFrontmostTagChange(newTag: tag, subviews: subviews)
-        }
+        setupProxyTagHandler(proxy: proxy, subviews: subviews)
         
         let frontmostIndex = findFrontmostLowerAreaViewIndex()
-        let currentTag = extractTag(from: subviews, at: frontmostIndex)
-        updateProxyFrontmostTag(currentTag)
+        updateProxyFrontmostTag(from: subviews, at: frontmostIndex, proxy: proxy)
     }
     
-    /// Updates the proxy's frontmost tag
-    private func updateProxyFrontmostTag(_ tag: AnyHashable?) {
-        proxy?.updateFrontmostLowerAreaTag(tag)
+    /// Sets up the proxy tag handler using type erasure
+    private func setupProxyTagHandler(proxy: any ZStackViewProxyProtocol, subviews: SubviewsCollection) {
+        let tagType = proxy.tagType
+        
+        if tagType == String.self {
+            proxy.setFrontmostLowerAreaTagHandler { (tag: String?) in
+                self.handleFrontmostTagChange(newTag: tag, subviews: subviews, proxy: proxy)
+            }
+        } else if tagType == Int.self {
+            proxy.setFrontmostLowerAreaTagHandler { (tag: Int?) in
+                self.handleFrontmostTagChange(newTag: tag, subviews: subviews, proxy: proxy)
+            }
+        } else if tagType == UUID.self {
+            proxy.setFrontmostLowerAreaTagHandler { (tag: UUID?) in
+                self.handleFrontmostTagChange(newTag: tag, subviews: subviews, proxy: proxy)
+            }
+        }
+    }
+    
+    /// Updates the proxy's frontmost tag using generic extraction
+    private func updateProxyFrontmostTag(from subviews: SubviewsCollection, at index: Int?, proxy: any ZStackViewProxyProtocol) {
+        let tagType = proxy.tagType
+        
+        if tagType == String.self {
+            let tag = proxy.extractTag(from: subviews, at: index, as: String.self)
+            proxy.updateFrontmostLowerAreaTag(tag)
+        } else if tagType == Int.self {
+            let tag = proxy.extractTag(from: subviews, at: index, as: Int.self)
+            proxy.updateFrontmostLowerAreaTag(tag)
+        } else if tagType == UUID.self {
+            let tag = proxy.extractTag(from: subviews, at: index, as: UUID.self)
+            proxy.updateFrontmostLowerAreaTag(tag)
+        }
     }
     
     /// Handles programmatic changes to the frontmost tag
-    func handleFrontmostTagChange(newTag: AnyHashable?, subviews: SubviewsCollection) {
+    private func handleFrontmostTagChange<T: Hashable>(newTag: T?, subviews: SubviewsCollection, proxy: any ZStackViewProxyProtocol) {
         guard let targetTag = newTag else { return }
-        guard let targetIndex = findViewIndex(with: targetTag, in: subviews) else { return }
+        guard let targetIndex = proxy.findViewIndex(with: targetTag, in: subviews) else { return }
         
         let targetIsInUpperArea = isInUpperArea(index: targetIndex)
         
@@ -55,27 +83,6 @@ extension ZStackView {
         }
     }
     
-    /// Extracts the tag from a subview at the given index
-    private func extractTag(from subviews: SubviewsCollection, at index: Int?) -> AnyHashable? {
-        guard let index = index,
-              subviews.indices.contains(index) else {
-            return nil
-        }
-        
-        // Try to extract any hashable tag
-        return subviews[index].containerValues.anyHashableTag
-    }
-    
-    /// Finds the index of a view with the specified tag
-    private func findViewIndex(with targetTag: AnyHashable, in subviews: SubviewsCollection) -> Int? {
-        for index in subviews.indices {
-            if let tag = subviews[index].containerValues.anyHashableTag,
-               tag == targetTag {
-                return index
-            }
-        }
-        return nil
-    }
     
     /// Moves a view from upper area to lower area
     private func moveViewFromUpperToLowerArea(index: Int) {
