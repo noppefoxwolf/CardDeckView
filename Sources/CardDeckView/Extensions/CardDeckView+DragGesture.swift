@@ -1,9 +1,9 @@
 import SwiftUI
 
 // MARK: - Drag Gesture Handling
-extension ZStackView {
+extension CardDeckView {
 
-    /// Creates the global drag gesture for the ZStackView
+    /// Creates the global drag gesture for the CardDeckView
     func createGlobalDragGesture(geometry: GeometryProxy) -> some Gesture {
         DragGesture()
             .onChanged { value in

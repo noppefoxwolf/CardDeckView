@@ -1,21 +1,21 @@
 import SwiftUI
 
-/// A SwiftUI view that provides an interactive ZStack with drag-and-drop functionality
-/// for reordering views between upper and lower areas.
+/// A SwiftUI view that provides an interactive card deck with drag-and-drop functionality
+/// for reordering cards between upper and lower areas.
 
-public struct ZStackView<Content: View>: View {
+public struct CardDeckView<Content: View>: View {
 
     // MARK: - Properties
 
     private let content: Content
 
-    @State var state = ZStackViewState()
-    @Environment(\.zStackViewProxy) var proxy: (any ZStackViewProxyProtocol)?
+    @State var state = CardDeckViewState()
+    @Environment(\.cardDeckViewProxy) var proxy: (any CardDeckViewProxyProtocol)?
 
     // MARK: - Initialization
 
-    /// Creates a new ZStackView
-    /// - Parameter content: The views to display in the stack
+    /// Creates a new CardDeckView
+    /// - Parameter content: The cards to display in the deck
     public init(@ViewBuilder content: () -> Content) {
         self.content = content()
     }
@@ -30,7 +30,7 @@ public struct ZStackView<Content: View>: View {
                         setupProxyConnection(subviews: subviews)
                     }
             }
-            .environment(\.zStackViewGeometryProxy, geometry)
+            .environment(\.cardDeckViewGeometryProxy, geometry)
         }
     }
 }
@@ -38,7 +38,7 @@ public struct ZStackView<Content: View>: View {
 
 extension EnvironmentValues {
     @Entry
-    var zStackViewGeometryProxy: GeometryProxy? = nil
+    var cardDeckViewGeometryProxy: GeometryProxy? = nil
 }
 
 
@@ -52,7 +52,7 @@ extension EnvironmentValues {
     TabView {
         Tab {
             NavigationStack {
-                ZStackView {
+                CardDeckView {
                     ForEach(0..<3) { index in
                         Color.green
                             .stackCardBackground{
@@ -77,7 +77,7 @@ extension EnvironmentValues {
                         .cornerRadius(8)
                         .padding()
                 })
-                .navigationTitle("ZStackView")
+                .navigationTitle("CardDeckView")
             }
         }
     }

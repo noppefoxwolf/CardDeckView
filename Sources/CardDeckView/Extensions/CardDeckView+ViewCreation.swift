@@ -1,7 +1,7 @@
 import SwiftUI
 
 // MARK: - View Creation
-extension ZStackView {
+extension CardDeckView {
 
     /// Creates the main layout with all subviews
     func createMainLayout(geometry: GeometryProxy, subviews: SubviewsCollection) -> some View {

@@ -1,7 +1,7 @@
 import SwiftUI
 
 // MARK: - Tag Management
-extension ZStackView {
+extension CardDeckView {
 
     /// Updates the frontmost lower area tag based on current view states
     func updateFrontmostLowerAreaTag(subviews: SubviewsCollection) {
@@ -22,7 +22,7 @@ extension ZStackView {
     }
 
     /// Sets up the proxy tag handler
-    private func setupProxyTagHandler<Proxy: ZStackViewProxyProtocol>(
+    private func setupProxyTagHandler<Proxy: CardDeckViewProxyProtocol>(
         proxy: Proxy,
         subviews: SubviewsCollection
     ) {
@@ -32,7 +32,7 @@ extension ZStackView {
     }
 
     /// Updates the proxy's frontmost tag
-    private func updateProxyFrontmostTag<Proxy: ZStackViewProxyProtocol>(
+    private func updateProxyFrontmostTag<Proxy: CardDeckViewProxyProtocol>(
         from subviews: SubviewsCollection,
         at index: Int?,
         proxy: Proxy
@@ -42,7 +42,7 @@ extension ZStackView {
     }
 
     /// Handles programmatic changes to the frontmost tag
-    private func handleFrontmostTagChange<Tag: Hashable, Proxy: ZStackViewProxyProtocol>(
+    private func handleFrontmostTagChange<Tag: Hashable, Proxy: CardDeckViewProxyProtocol>(
         newTag: Tag?,
         subviews: SubviewsCollection,
         proxy: Proxy
@@ -80,7 +80,7 @@ extension ZStackView {
     }
 
     /// Finds view index using AnyHashable fallback for uncommon types
-    private func findViewIndexWithAnyHashable<Tag: Hashable, Proxy: ZStackViewProxyProtocol>(
+    private func findViewIndexWithAnyHashable<Tag: Hashable, Proxy: CardDeckViewProxyProtocol>(
         targetTag: Tag,
         subviews: SubviewsCollection,
         proxy: Proxy

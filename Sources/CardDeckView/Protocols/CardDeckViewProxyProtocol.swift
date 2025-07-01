@@ -1,7 +1,7 @@
 import SwiftUI
 
 @MainActor
-protocol ZStackViewProxyProtocol: Sendable {
+protocol CardDeckViewProxyProtocol: Sendable {
     associatedtype TagType: Hashable
     var tagType: TagType.Type { get }
     func setFrontmostLowerAreaTagHandler(_ handler: @escaping (TagType?) -> Void)

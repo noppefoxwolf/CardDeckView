@@ -1,22 +1,22 @@
 import SwiftUI
 
-public struct ZStackViewReader<Tag: Hashable, Content: View>: View {
+public struct CardDeckViewReader<Tag: Hashable, Content: View>: View {
 
-    private let content: (ZStackViewProxy<Tag>) -> Content
+    private let content: (CardDeckViewProxy<Tag>) -> Content
 
-    @StateObject private var proxy: ZStackViewProxy<Tag> = ZStackViewProxy()
+    @StateObject private var proxy: CardDeckViewProxy<Tag> = CardDeckViewProxy()
 
-    public init(@ViewBuilder content: @escaping (ZStackViewProxy<Tag>) -> Content) {
+    public init(@ViewBuilder content: @escaping (CardDeckViewProxy<Tag>) -> Content) {
         self.content = content
     }
 
     public var body: some View {
         content(proxy)
-            .environment(\.zStackViewProxy, proxy)
+            .environment(\.cardDeckViewProxy, proxy)
     }
 }
 
-public class ZStackViewProxy<Tag: Hashable>: ObservableObject, ZStackViewProxyProtocol {
+public class CardDeckViewProxy<Tag: Hashable>: ObservableObject, CardDeckViewProxyProtocol {
 
     typealias TagType = Tag
 

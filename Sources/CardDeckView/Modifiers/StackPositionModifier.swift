@@ -9,7 +9,7 @@ public struct StackPositionModifier<Tag: Hashable>: ViewModifier {
     }
 
     public func body(content: Content) -> some View {
-        ZStackViewReader { proxy in
+        CardDeckViewReader { proxy in
             content
                 .onAppear {
                     setupProxyBinding(proxy: proxy)
@@ -27,7 +27,7 @@ public struct StackPositionModifier<Tag: Hashable>: ViewModifier {
         }
     }
 
-    private func setupProxyBinding(proxy: ZStackViewProxy<Tag>) {
+    private func setupProxyBinding(proxy: CardDeckViewProxy<Tag>) {
         // Sync initial value from proxy to binding
         self.tag = proxy.frontmostLowerAreaTag
 
@@ -39,7 +39,7 @@ public struct StackPositionModifier<Tag: Hashable>: ViewModifier {
 }
 
 extension View {
-    /// Binds a tag to the current stack position in ZStackView
+    /// Binds a tag to the current stack position in CardDeckView
     /// - Parameter tag: A binding to the tag value that represents the current frontmost position
     /// - Returns: A view with the stack position modifier applied
     public func stackPosition<Tag: Hashable>(tag: Binding<Tag?>) -> some View {

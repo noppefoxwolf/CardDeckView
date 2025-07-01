@@ -1,9 +1,9 @@
 import Combine
 import SwiftUI
 
-/// Observable state manager for ZStackView that handles view states and drag interactions
+/// Observable state manager for CardDeckView that handles card states and drag interactions
 @Observable
-final class ZStackViewState {
+final class CardDeckViewState {
 
     // MARK: - Properties
 
@@ -85,14 +85,14 @@ final class ZStackViewState {
         
         let constrainedOffset: CGSize
         if viewStates[index].isInUpperArea {
-            // Upper area views can move freely
-            constrainedOffset = offset
-        } else {
-            // Lower area views: constrain y-movement to 0 or less (prevent downward movement)
+            // Upper area views: constrain y-movement to 0 or greater (prevent upward movement beyond top)
             constrainedOffset = CGSize(
                 width: offset.width,
-                height: min(0, offset.height)
+                height: max(0, offset.height)
             )
+        } else {
+            // Lower area views can move freely
+            constrainedOffset = offset
         }
         
         viewStates[index].dragOffset = constrainedOffset

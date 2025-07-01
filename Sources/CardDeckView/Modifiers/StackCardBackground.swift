@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct StackCardBackgroundModifier<V: View>: ViewModifier {
-    @Environment(\.zStackViewGeometryProxy)
+    @Environment(\.cardDeckViewGeometryProxy)
     var geometryProxy
     
     let view: V

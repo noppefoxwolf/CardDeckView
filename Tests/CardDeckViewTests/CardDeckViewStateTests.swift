@@ -1,11 +1,11 @@
 import SwiftUI
 import Testing
 
-@testable import ZStackView
+@testable import CardDeckView
 
-@Test("ZStackViewState initialization")
+@Test("CardDeckViewState initialization")
 func testInitialization() {
-    let state = ZStackViewState()
+    let state = CardDeckViewState()
 
     #expect(state.viewStates.isEmpty)
     #expect(state.draggedViewIndex == nil)
@@ -15,7 +15,7 @@ func testInitialization() {
 
 @Test("Initialize view states")
 func testInitializeViewStates() {
-    let state = ZStackViewState()
+    let state = CardDeckViewState()
 
     state.initializeViewStates(count: 3)
 
@@ -33,7 +33,7 @@ func testInitializeViewStates() {
 
 @Test("Initialize view states with same count doesn't reinitialize")
 func testInitializeViewStatesIdempotent() {
-    let state = ZStackViewState()
+    let state = CardDeckViewState()
 
     state.initializeViewStates(count: 2)
     let originalStates = state.viewStates
@@ -47,7 +47,7 @@ func testInitializeViewStatesIdempotent() {
 
 @Test("Get z-index for valid and invalid indices")
 func testGetZIndex() {
-    let state = ZStackViewState()
+    let state = CardDeckViewState()
     state.initializeViewStates(count: 3)
 
     #expect(state.getZIndex(for: 0) == 2.0)
@@ -58,7 +58,7 @@ func testGetZIndex() {
 
 @Test("Check if view is in upper area")
 func testIsInUpperArea() {
-    let state = ZStackViewState()
+    let state = CardDeckViewState()
     state.initializeViewStates(count: 2)
 
     #expect(!state.isInUpperArea(index: 0))
@@ -68,7 +68,7 @@ func testIsInUpperArea() {
 
 @Test("Get drag offset")
 func testGetDragOffset() {
-    let state = ZStackViewState()
+    let state = CardDeckViewState()
     state.initializeViewStates(count: 2)
 
     #expect(state.getDragOffset(for: 0) == .zero)
@@ -78,7 +78,7 @@ func testGetDragOffset() {
 
 @Test("Check if view is dragging")
 func testIsDragging() {
-    let state = ZStackViewState()
+    let state = CardDeckViewState()
     state.initializeViewStates(count: 2)
 
     #expect(!state.isDragging(index: 0))
@@ -88,7 +88,7 @@ func testIsDragging() {
 
 @Test("Start dragging")
 func testStartDragging() {
-    let state = ZStackViewState()
+    let state = CardDeckViewState()
     state.initializeViewStates(count: 3)
 
     state.startDragging(viewIndex: 1)
@@ -101,7 +101,7 @@ func testStartDragging() {
 
 @Test("Start dragging with invalid index")
 func testStartDraggingInvalidIndex() {
-    let state = ZStackViewState()
+    let state = CardDeckViewState()
     state.initializeViewStates(count: 2)
 
     state.startDragging(viewIndex: 5)
@@ -111,7 +111,7 @@ func testStartDraggingInvalidIndex() {
 
 @Test("Update drag offset")
 func testUpdateDragOffset() {
-    let state = ZStackViewState()
+    let state = CardDeckViewState()
     state.initializeViewStates(count: 2)
 
     state.startDragging(viewIndex: 1)
@@ -124,7 +124,7 @@ func testUpdateDragOffset() {
 
 @Test("Update drag offset without dragging")
 func testUpdateDragOffsetNoDragging() {
-    let state = ZStackViewState()
+    let state = CardDeckViewState()
     state.initializeViewStates(count: 2)
 
     let testOffset = CGSize(width: 10, height: 20)
@@ -136,7 +136,7 @@ func testUpdateDragOffsetNoDragging() {
 
 @Test("End dragging without changing area")
 func testEndDraggingNoChange() {
-    let state = ZStackViewState()
+    let state = CardDeckViewState()
     state.initializeViewStates(count: 2)
 
     state.startDragging(viewIndex: 1)
@@ -153,7 +153,7 @@ func testEndDraggingNoChange() {
 
 @Test("End dragging with area change")
 func testEndDraggingWithChange() {
-    let state = ZStackViewState()
+    let state = CardDeckViewState()
     state.initializeViewStates(count: 2)
 
     state.startDragging(viewIndex: 1)
@@ -169,7 +169,7 @@ func testEndDraggingWithChange() {
 
 @Test("Upper and lower area view indices")
 func testAreaViewIndices() {
-    let state = ZStackViewState()
+    let state = CardDeckViewState()
     state.initializeViewStates(count: 4)
 
     // Initially all views are in lower area
@@ -189,7 +189,7 @@ func testAreaViewIndices() {
 
 @Test("Get target view indices")
 func testGetTargetViewIndices() {
-    let state = ZStackViewState()
+    let state = CardDeckViewState()
     state.initializeViewStates(count: 3)
 
     // Move one view to upper area
@@ -205,7 +205,7 @@ func testGetTargetViewIndices() {
 
 @Test("Find nearest view index")
 func testFindNearestViewIndex() {
-    let state = ZStackViewState()
+    let state = CardDeckViewState()
     state.initializeViewStates(count: 4)
 
     // Move views 1 and 3 to upper area
@@ -229,7 +229,7 @@ func testFindNearestViewIndex() {
 
 @Test("Should change area logic")
 func testShouldChangeArea() {
-    let state = ZStackViewState()
+    let state = CardDeckViewState()
     state.initializeViewStates(count: 2)
 
     // Test upper area view

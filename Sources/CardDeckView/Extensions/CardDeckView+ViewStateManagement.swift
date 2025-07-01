@@ -1,7 +1,7 @@
 import SwiftUI
 
 // MARK: - View State Management
-extension ZStackView {
+extension CardDeckView {
 
     /// Initializes view states for all subviews
     func initializeViewStates(count: Int) {
