@@ -5,7 +5,7 @@ extension ZStackView {
 
     /// Creates the main layout with all subviews
     func createMainLayout(geometry: GeometryProxy, subviews: SubviewsCollection) -> some View {
-        ZStack {
+        ZStack(alignment: .top) {
             Color.clear
 
             ForEach(subviews.indices, id: \.self) { index in
@@ -57,7 +57,7 @@ extension ZStackView {
     /// Calculates the Y position for a view based on its area
     private func calculateYPosition(isUpperArea: Bool, geometry: GeometryProxy) -> CGFloat {
         if isUpperArea {
-            return -geometry.size.height / 2 - geometry.safeAreaInsets.top
+            return -(geometry.safeAreaInsets.top + geometry.size.height / 2)
         } else {
             return geometry.size.height / 2
         }
