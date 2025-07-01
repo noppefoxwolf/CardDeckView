@@ -2,6 +2,10 @@
 
 A SwiftUI library that provides an interactive card deck with swipe navigation and drag gestures for iOS apps.
 
+![Example](.github/docs/example.gif)
+
+[日本語版 README](.github/docs/README_ja.md)
+
 ## Features
 
 - **Card Stack Navigation**: Swipe through cards with smooth animations
