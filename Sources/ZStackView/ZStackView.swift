@@ -53,12 +53,15 @@ extension EnvironmentValues {
         Tab {
             NavigationStack {
                 ZStackView {
-                    ForEach(0..<5) { index in
+                    ForEach(0..<3) { index in
                         Color.green
                             .stackCardBackground{
                                 Color.red.shadow(radius: 10)
                             }
+                            .tag("\(index)")
                     }
+                    
+                    Color.blue
                     
                     Color.green
                         .overlay {
