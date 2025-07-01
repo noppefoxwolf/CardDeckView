@@ -37,36 +37,16 @@ public struct ZStackView<Content: View>: View {
 // MARK: - Preview
 
 #Preview {
-    @Previewable @State var currentPosition: String = "0"
+    @Previewable
+    @State
+    var currentPosition: String? = nil
 
     TabView {
         Tab {
             NavigationStack {
                 ZStackView {
                     ForEach(0..<5) { index in
-                        Text("aaa")
-                            .frame(maxWidth: .infinity, maxHeight: .infinity)
-                            .background {
-                                Color.red.ignoresSafeArea()
-                                    .shadow(radius: 10)
-                            }
-            //            Color.red
-            //                .overlay {
-            //                    VStack {
-            //                        Button {
-            //                            print("Action: \(index)")
-            //                            currentPosition = "1"
-            //                        } label: {
-            //                            Text("Card: \(index)")
-            //                        }
-            //                        .buttonStyle(.borderedProminent)
-            //
-            //                        Text("Current: \(currentPosition)")
-            //                            .foregroundColor(.white)
-            //                    }
-            //                }
-            //                .shadow(radius: 30)
-            //                .tag("\(index)")
+                        Color.black.opacity(0.2)
                     }
 
                     Color.green
