@@ -33,26 +33,22 @@ extension CardDeckView {
         geometry: GeometryProxy
     ) -> some View {
         let isUpperArea = state.isInUpperArea(index: index)
+        let yPosition = calculateYPosition(isUpperArea: isUpperArea, geometry: geometry)
+        let dragOffset = state.getDragOffset(for: index)
+        let zIndex = state.getZIndex(for: index)
+        let isDragging = state.isDragging(index: index)
 
-        return createStyledView(subview: subview, index: index, geometry: geometry)
+        return subview
+            .frame(width: geometry.size.width, height: geometry.size.height)
+            .offset(dragOffset)
+            .zIndex(zIndex)
+            .allowsHitTesting(!isDragging)
             .position(
                 x: geometry.size.width / 2,
-                y: calculateYPosition(isUpperArea: isUpperArea, geometry: geometry)
+                y: yPosition
             )
     }
 
-    /// Creates a styled view with frame, offset, and z-index
-    private func createStyledView(
-        subview: Subview,
-        index: Int,
-        geometry: GeometryProxy
-    ) -> some View {
-        subview
-            .frame(width: geometry.size.width, height: geometry.size.height)
-            .offset(state.getDragOffset(for: index))
-            .zIndex(state.getZIndex(for: index))
-            .allowsHitTesting(!state.isDragging(index: index))
-    }
 
     /// Calculates the Y position for a view based on its area
     private func calculateYPosition(isUpperArea: Bool, geometry: GeometryProxy) -> CGFloat {
