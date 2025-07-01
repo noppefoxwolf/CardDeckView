@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 // MARK: - Drag Gesture Handling
 extension CardDeckView {
@@ -18,6 +19,9 @@ extension CardDeckView {
     private func handleDragChanged(value: DragGesture.Value) {
         if state.draggedViewIndex == nil {
             selectViewForDragging(dragValue: value)
+            // Provide light haptic feedback when drag starts
+            let impactFeedback = UIImpactFeedbackGenerator(style: .light)
+            impactFeedback.impactOccurred()
         }
 
         updateDragOffset(value: value)
@@ -65,20 +69,101 @@ extension CardDeckView {
         let currentY =
             (isUpperArea ? -geometry.size.height / 2 : geometry.size.height / 2)
             + value.translation.height
+        
+        // Calculate velocity from predicted end location
         let velocity = value.predictedEndTranslation.height - value.translation.height
-        let velocityThreshold: CGFloat = 50
-
-        let shouldChangeArea = state.shouldChangeArea(
+        let velocityMagnitude = abs(velocity)
+        
+        // Enhanced velocity thresholds for more responsive gestures
+        let fastSwipeThreshold: CGFloat = 100
+        let mediumSwipeThreshold: CGFloat = 30
+        
+        // Determine if we should change areas based on enhanced criteria
+        let shouldChangeArea = determineShouldChangeArea(
             index: index,
             currentY: currentY,
             velocity: velocity,
-            velocityThreshold: velocityThreshold
+            translation: value.translation.height,
+            predictedEnd: value.predictedEndTranslation.height,
+            isUpperArea: isUpperArea,
+            geometry: geometry
         )
-
-        let duration = shouldChangeArea ? max(0.2, min(0.5, abs(velocity) / 1000)) : 0.2
-
+        
+        // Calculate animation duration based on velocity
+        let duration = calculateAnimationDuration(
+            velocity: velocityMagnitude,
+            shouldChangeArea: shouldChangeArea
+        )
+        
+        // Provide haptic feedback based on action
+        if shouldChangeArea {
+            // Medium impact for successful area change
+            let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
+            impactFeedback.impactOccurred()
+        } else {
+            // Light impact for return to original position
+            let impactFeedback = UIImpactFeedbackGenerator(style: .light)
+            impactFeedback.impactOccurred()
+        }
+        
+        // Use smooth easing animation without spring
         withAnimation(.easeOut(duration: duration)) {
             state.endDragging(shouldChangeArea: shouldChangeArea)
+        }
+    }
+    
+    /// Determines if the view should change areas based on enhanced criteria
+    private func determineShouldChangeArea(
+        index: Int,
+        currentY: CGFloat,
+        velocity: CGFloat,
+        translation: CGFloat,
+        predictedEnd: CGFloat,
+        isUpperArea: Bool,
+        geometry: GeometryProxy
+    ) -> Bool {
+        let velocityThreshold: CGFloat = 30
+        let distanceThreshold = geometry.size.height * 0.15 // 15% of screen height
+        
+        // Check velocity-based decision first (for quick swipes)
+        if abs(velocity) > velocityThreshold {
+            // Provide haptic feedback for fast swipe detection
+            let selectionFeedback = UISelectionFeedbackGenerator()
+            selectionFeedback.selectionChanged()
+            return isUpperArea ? velocity > 0 : velocity < 0
+        }
+        
+        // Check if predicted end position suggests area change
+        let predictedY = (isUpperArea ? -geometry.size.height / 2 : geometry.size.height / 2) + predictedEnd
+        let crossesCenter = isUpperArea ? predictedY > 0 : predictedY < 0
+        
+        // Check if translation distance is significant
+        let significantDistance = abs(translation) > distanceThreshold
+        
+        return crossesCenter && significantDistance
+    }
+    
+    /// Calculates animation duration based on velocity
+    private func calculateAnimationDuration(
+        velocity: CGFloat,
+        shouldChangeArea: Bool
+    ) -> Double {
+        if shouldChangeArea {
+            // Fast swipe - quick animation
+            if velocity > 200 {
+                return 0.25
+            }
+            // Medium swipe - moderate animation
+            else if velocity > 50 {
+                return 0.35
+            }
+            // Slow drag - smooth animation
+            else {
+                return 0.45
+            }
+        } else {
+            // Return to original position - always quick
+            return 0.2
         }
     }
 
