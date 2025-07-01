@@ -85,14 +85,15 @@ final class CardDeckViewState {
         
         let constrainedOffset: CGSize
         if viewStates[index].isInUpperArea {
-            // Upper area views: constrain y-movement to 0 or greater (prevent upward movement beyond top)
             constrainedOffset = CGSize(
                 width: offset.width,
                 height: max(0, offset.height)
             )
         } else {
-            // Lower area views can move freely
-            constrainedOffset = offset
+            constrainedOffset = CGSize(
+                width: offset.width,
+                height: min(0, offset.height)
+            )
         }
         
         viewStates[index].dragOffset = constrainedOffset
