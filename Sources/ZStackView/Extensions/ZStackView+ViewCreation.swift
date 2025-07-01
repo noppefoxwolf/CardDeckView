@@ -56,7 +56,11 @@ extension ZStackView {
 
     /// Calculates the Y position for a view based on its area
     private func calculateYPosition(isUpperArea: Bool, geometry: GeometryProxy) -> CGFloat {
-        isUpperArea ? -geometry.size.height / 2 : geometry.size.height / 2
+        if isUpperArea {
+            return -geometry.size.height / 2 - geometry.safeAreaInsets.top
+        } else {
+            return geometry.size.height / 2
+        }
     }
 
 }
