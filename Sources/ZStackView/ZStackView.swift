@@ -44,17 +44,25 @@ public struct ZStackView<Content: View>: View {
     TabView {
         Tab {
             NavigationStack {
-                ZStackView {
-                    ForEach(0..<5) { index in
-                        Color.black.opacity(0.2)
-                    }
-
-                    Color.green
-                        .overlay {
-                            Text("Done")
+                GeometryReader(content: { proxy in
+                    ZStackView {
+                        ForEach(0..<5) { index in
+                            Color.black.opacity(0.2)
+                                .background(alignment: .top) {
+                                    Color.red
+                                        .frame(height: proxy.size.height + proxy.safeAreaInsets.top + proxy.safeAreaInsets.bottom)
+                                        .offset(y: -proxy.safeAreaInsets.top)
+                                        .shadow(radius: 10)
+                                }
                         }
-                        .tag("done")
-                }
+
+                        Color.green
+                            .overlay {
+                                Text("Done")
+                            }
+                            .tag("done")
+                    }
+                })
                 .stackPosition(tag: $currentPosition)
                 .safeAreaInset(edge: .bottom, content: {
                     Text("Current Position: \(currentPosition)")
@@ -66,5 +74,15 @@ public struct ZStackView<Content: View>: View {
                 .navigationTitle("ZStackView")
             }
         }
+    }
+}
+
+extension EnvironmentValues {
+    @Entry
+    var zStackViewGeometryProxy: GeometryProxy? = nil
+}
+
+extension View {
+    func stackCardBackground<Content: View>(_ view: Content) {
     }
 }
