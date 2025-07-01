@@ -1,11 +1,13 @@
-# ZStackView
+# CardDeckView
 
-A SwiftUI library that provides an interactive ZStack with drag-and-drop functionality for reordering views between upper and lower areas.
+A SwiftUI library that provides an interactive card deck with swipe navigation and drag gestures for iOS apps.
 
 ## Features
 
-- **Interactive ZStack**: Drag views between upper and lower areas
-- **Smooth Animations**: Fluid transitions with velocity-based animations
+- **Card Stack Navigation**: Swipe through cards with smooth animations
+- **Interactive Drag Gestures**: Natural touch interactions for card navigation
+- **Position Tracking**: Monitor current card position with binding support
+- **Customizable Styling**: Built-in card background modifiers and shadows
 - **SwiftUI Native**: Built entirely with SwiftUI components
 - **iOS & macOS Support**: Compatible with iOS 18+ and macOS 15+
 
@@ -19,55 +21,112 @@ A SwiftUI library that provides an interactive ZStack with drag-and-drop functio
 
 ### Swift Package Manager
 
-Add ZStackView to your project using Swift Package Manager:
+Add CardDeckView to your project using Swift Package Manager:
 
 1. In Xcode, select File → Add Package Dependencies
-2. Enter the repository URL
+2. Enter the repository URL: `https://github.com/noppefoxwolf/CardDeckView`
 3. Select the version you want to use
 
 Or add it to your `Package.swift`:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/noppefoxwolf/ZStackView.git", from: "1.0.0")
+    .package(url: "https://github.com/noppefoxwolf/CardDeckView.git", from: "1.0.0")
 ]
 ```
 
 ## Usage
 
+### Basic Implementation
+
 ```swift
 import SwiftUI
-import ZStackView
+import CardDeckView
 
 struct ContentView: View {
+    @State private var currentPosition: String? = nil
+    
     var body: some View {
-        ZStackView {
-            ForEach(0..<3) { i in
-                Rectangle()
-                    .fill(Color.red)
-                    .overlay {
-                        Text("\(i)")
-                    }
-                    .shadow(radius: 20)
+        CardDeckView {
+            ForEach(0..<5) { index in
+                CardView(title: "Card \(index + 1)")
+                    .tag("\(index)")
             }
-            
-            Color.green
-                .overlay {
-                    Text("Done")
-                }
         }
-        .ignoresSafeArea()
+        .stackPosition(tag: $currentPosition)
+    }
+}
+
+struct CardView: View {
+    let title: String
+    
+    var body: some View {
+        VStack {
+            Text(title)
+                .font(.largeTitle)
+                .fontWeight(.bold)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color.blue.gradient)
+        .foregroundColor(.white)
+        .stackCardBackground {
+            Color.blue.opacity(0.3)
+                .shadow(radius: 10)
+        }
+        .cornerRadius(20)
     }
 }
 ```
 
+### Advanced Example
+
+```swift
+struct AdvancedCardDeck: View {
+    @State private var currentPosition: String? = nil
+    
+    var body: some View {
+        NavigationStack {
+            CardDeckView {
+                ForEach(cards) { card in
+                    CustomCardView(card: card)
+                        .tag(card.id)
+                }
+                
+                CompletionCard()
+                    .tag("completed")
+            }
+            .stackPosition(tag: $currentPosition)
+            .safeAreaInset(edge: .bottom) {
+                StatusIndicator(position: currentPosition)
+            }
+            .navigationTitle("Card Deck")
+        }
+    }
+}
+```
+
+## Key Components
+
+### CardDeckView
+The main container that manages card navigation and gestures.
+
+### .stackPosition(tag:)
+Modifier to track the current visible card position.
+
+### .stackCardBackground
+Modifier to add shadow and background styling to cards.
+
 ## How It Works
 
-ZStackView creates two areas:
-- **Upper Area**: Views positioned above the center
-- **Lower Area**: Views positioned below the center
+CardDeckView manages a stack of cards where users can:
+- **Swipe up/down** to navigate between cards
+- **Drag** cards to reveal the next/previous card
+- **Track position** using the stackPosition modifier
 
-Users can drag views between these areas with smooth animations and velocity-based transitions.
+The view automatically handles:
+- Smooth animations between cards
+- Velocity-based gesture recognition
+- Z-index management for proper layering
 
 ## Development
 
