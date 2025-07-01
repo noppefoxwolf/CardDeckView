@@ -55,7 +55,7 @@ extension CardDeckView {
 
         let targetIsInUpperArea = state.isInUpperArea(index: targetIndex)
 
-        withAnimation(.easeInOut(duration: 0.3)) {
+        withAnimation(.easeOut(duration: 0.3)) {
             if targetIsInUpperArea {
                 moveViewFromUpperToLowerArea(index: targetIndex)
             }
