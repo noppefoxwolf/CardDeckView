@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 // MARK: - Drag Gesture Handling
 extension CardDeckView {
@@ -18,6 +19,9 @@ extension CardDeckView {
     private func handleDragChanged(value: DragGesture.Value) {
         if state.draggedViewIndex == nil {
             selectViewForDragging(dragValue: value)
+            // Provide light haptic feedback when drag starts
+            let impactFeedback = UIImpactFeedbackGenerator(style: .light)
+            impactFeedback.impactOccurred()
         }
 
         updateDragOffset(value: value)
@@ -91,6 +95,17 @@ extension CardDeckView {
             shouldChangeArea: shouldChangeArea
         )
         
+        // Provide haptic feedback based on action
+        if shouldChangeArea {
+            // Medium impact for successful area change
+            let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
+            impactFeedback.impactOccurred()
+        } else {
+            // Light impact for return to original position
+            let impactFeedback = UIImpactFeedbackGenerator(style: .light)
+            impactFeedback.impactOccurred()
+        }
+        
         // Use smooth easing animation without spring
         withAnimation(.easeOut(duration: duration)) {
             state.endDragging(shouldChangeArea: shouldChangeArea)
@@ -112,6 +127,9 @@ extension CardDeckView {
         
         // Check velocity-based decision first (for quick swipes)
         if abs(velocity) > velocityThreshold {
+            // Provide haptic feedback for fast swipe detection
+            let selectionFeedback = UISelectionFeedbackGenerator()
+            selectionFeedback.selectionChanged()
             return isUpperArea ? velocity > 0 : velocity < 0
         }
         
