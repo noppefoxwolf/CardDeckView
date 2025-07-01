@@ -21,9 +21,7 @@ public struct StackPositionModifier<Tag: Hashable>: ViewModifier {
                 }
                 .onChange(of: proxy.frontmostLowerAreaTag) { _, newTag in
                     if newTag != tag {
-                        DispatchQueue.main.async {
-                            self.tag = newTag
-                        }
+                        self.tag = newTag
                     }
                 }
         }
