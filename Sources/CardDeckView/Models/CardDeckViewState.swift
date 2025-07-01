@@ -12,42 +12,20 @@ final class CardDeckViewState {
 
     // MARK: - Computed Properties
 
-    private var _cachedUpperAreaIndices: [Int] = []
-    private var _cachedLowerAreaIndices: [Int] = []
-    private var _cacheIsValid: Bool = false
-    
     /// Indices of views currently in the upper area
     var upperAreaViewIndices: [Int] {
-        if !_cacheIsValid {
-            updateAreaIndicesCache()
-        }
-        return _cachedUpperAreaIndices
+        viewStates.enumerated()
+            .compactMap { index, state in
+                state.isInUpperArea ? index : nil
+            }
     }
 
     /// Indices of views currently in the lower area
     var lowerAreaViewIndices: [Int] {
-        if !_cacheIsValid {
-            updateAreaIndicesCache()
-        }
-        return _cachedLowerAreaIndices
-    }
-    
-    private func updateAreaIndicesCache() {
-        _cachedUpperAreaIndices.removeAll(keepingCapacity: true)
-        _cachedLowerAreaIndices.removeAll(keepingCapacity: true)
-        
-        for (index, state) in viewStates.enumerated() {
-            if state.isInUpperArea {
-                _cachedUpperAreaIndices.append(index)
-            } else {
-                _cachedLowerAreaIndices.append(index)
+        viewStates.enumerated()
+            .compactMap { index, state in
+                !state.isInUpperArea ? index : nil
             }
-        }
-        _cacheIsValid = true
-    }
-    
-    private func invalidateCache() {
-        _cacheIsValid = false
     }
 
     // MARK: - Initialization
@@ -59,12 +37,10 @@ final class CardDeckViewState {
     /// Initializes view states for the given number of views
     func initializeViewStates(count: Int) {
         if viewStates.count != count {
-            viewStates.reserveCapacity(count)
             viewStates = (0..<count)
                 .map { index in
                     ViewState(zIndex: Double(count - 1 - index))
                 }
-            invalidateCache()
         }
     }
 
@@ -130,7 +106,6 @@ final class CardDeckViewState {
 
         if shouldChangeArea {
             viewStates[index].isInUpperArea.toggle()
-            invalidateCache()
         }
 
         viewStates[index].dragOffset = .zero
@@ -168,18 +143,12 @@ final class CardDeckViewState {
     /// Moves a view from upper area to lower area
     func moveViewFromUpperToLowerArea(index: Int) {
         guard viewStates.indices.contains(index) else { return }
-        if viewStates[index].isInUpperArea {
-            viewStates[index].isInUpperArea = false
-            invalidateCache()
-        }
+        viewStates[index].isInUpperArea = false
     }
 
     /// Sets the area state for a specific view
     func setViewArea(index: Int, isInUpperArea: Bool) {
         guard viewStates.indices.contains(index) else { return }
-        if viewStates[index].isInUpperArea != isInUpperArea {
-            viewStates[index].isInUpperArea = isInUpperArea
-            invalidateCache()
-        }
+        viewStates[index].isInUpperArea = isInUpperArea
     }
 }
