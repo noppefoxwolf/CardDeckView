@@ -7,7 +7,7 @@ public struct CardDeckView<Content: View>: View {
 
     // MARK: - Properties
 
-    private let content: Content
+    internal let content: Content
 
     @State var state = CardDeckViewState()
     @Environment(\.cardDeckViewProxy) var proxy: (any CardDeckViewProxyProtocol)?
