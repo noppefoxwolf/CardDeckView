@@ -23,7 +23,7 @@ struct StackCardBackgroundModifier<V: View>: ViewModifier {
 }
 
 extension View {
-    public func stackCardBackground<Content: View>(_ view: () -> Content) -> some View {
+    public func stackCardBackground<Content: View>(@ViewBuilder _ view: () -> Content) -> some View {
         modifier(StackCardBackgroundModifier(view: view()))
     }
 }
