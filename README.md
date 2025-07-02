@@ -132,6 +132,26 @@ The view automatically handles:
 - Velocity-based gesture recognition
 - Z-index management for proper layering
 
+### Important Note About onAppear
+
+Since CardDeckView is built on top of ZStack, **all cards' `onAppear` modifiers are called when the deck is first displayed**, not when individual cards become visible. This is the expected behavior for ZStack in SwiftUI.
+
+If you need to trigger actions when a specific card becomes visible, use the `stackPosition` binding instead:
+
+```swift
+CardDeckView {
+    ForEach(cards) { card in
+        CardView(card: card)
+            .tag(card.id)
+    }
+}
+.stackPosition(tag: $currentPosition)
+.onChange(of: currentPosition) { newPosition in
+    // Trigger actions when card position changes
+    handleCardAppeared(for: newPosition)
+}
+```
+
 ## Development
 
 ### Building
