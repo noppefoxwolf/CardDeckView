@@ -17,7 +17,7 @@ extension CardDeckView {
             }
         }
         .contentShape(Rectangle())
-        .gesture(createGlobalDragGesture(geometry: geometry))
+        .gesture(createGlobalDragGesture(geometry: geometry), isEnabled: isDragGestureEnabled)
         .onAppear {
             initializeViewStates(count: subviews.count)
         }
