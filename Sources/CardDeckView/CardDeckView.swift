@@ -11,6 +11,7 @@ public struct CardDeckView<Content: View>: View {
 
     @State var state = CardDeckViewState()
     @Environment(\.cardDeckViewProxy) var proxy: (any CardDeckViewProxyProtocol)?
+    @Environment(\.cardDeckDisabledScrollDirections) var disabledScrollDirections
 
     // MARK: - Initialization
 

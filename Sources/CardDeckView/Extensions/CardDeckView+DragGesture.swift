@@ -1,5 +1,7 @@
 import SwiftUI
+#if canImport(UIKit)
 import UIKit
+#endif
 
 // MARK: - Drag Gesture Handling
 extension CardDeckView {
@@ -8,11 +10,57 @@ extension CardDeckView {
     func createGlobalDragGesture(geometry: GeometryProxy) -> some Gesture {
         DragGesture()
             .onChanged { value in
-                handleDragChanged(value: value)
+                if shouldHandleDragGesture(value: value) {
+                    handleDragChanged(value: value)
+                }
             }
             .onEnded { value in
-                handleDragEnded(value: value, geometry: geometry)
+                if shouldHandleDragGesture(value: value) {
+                    handleDragEnded(value: value, geometry: geometry)
+                }
             }
+    }
+    
+    /// Determines if the drag gesture should be enabled based on disabled scroll directions
+    var isDragGestureEnabled: Bool {
+        // If no directions are disabled, allow all gestures
+        guard !disabledScrollDirections.isEmpty else { return true }
+        
+        // Check if all directions are disabled
+        if disabledScrollDirections.contains(.all) {
+            return false
+        }
+        
+        // If only specific directions are disabled, we need to check during the gesture
+        // For now, enable the gesture and check within the handlers
+        return true
+    }
+    
+    /// Determines if the drag gesture should be handled based on disabled scroll directions
+    private func shouldHandleDragGesture(value: DragGesture.Value) -> Bool {
+        let translation = value.translation
+        
+        // If no directions are disabled, allow all gestures
+        guard !disabledScrollDirections.isEmpty else { return true }
+        
+        // Check if all directions are disabled
+        if disabledScrollDirections.contains(.all) {
+            return false
+        }
+        
+        // Check vertical gesture direction (up or down)
+        let isUpwardGesture = translation.height < 0 // Negative translation means upward
+        let isDownwardGesture = translation.height > 0 // Positive translation means downward
+        
+        if isUpwardGesture && disabledScrollDirections.contains(.up) {
+            return false
+        }
+        
+        if isDownwardGesture && disabledScrollDirections.contains(.down) {
+            return false
+        }
+        
+        return true
     }
 
     /// Handles drag gesture changes
@@ -20,8 +68,10 @@ extension CardDeckView {
         if state.draggedViewIndex == nil {
             selectViewForDragging(dragValue: value)
             // Provide light haptic feedback when drag starts
+            #if canImport(UIKit)
             let impactFeedback = UIImpactFeedbackGenerator(style: .light)
             impactFeedback.impactOccurred()
+            #endif
         }
 
         updateDragOffset(value: value)
@@ -75,8 +125,8 @@ extension CardDeckView {
         let velocityMagnitude = abs(velocity)
         
         // Enhanced velocity thresholds for more responsive gestures
-        let fastSwipeThreshold: CGFloat = 100
-        let mediumSwipeThreshold: CGFloat = 30
+        let _ = 100 // fastSwipeThreshold
+        let _ = 30  // mediumSwipeThreshold
         
         // Determine if we should change areas based on enhanced criteria
         let shouldChangeArea = determineShouldChangeArea(
@@ -96,6 +146,7 @@ extension CardDeckView {
         )
         
         // Provide haptic feedback based on action
+        #if canImport(UIKit)
         if shouldChangeArea {
             // Medium impact for successful area change
             let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
@@ -105,6 +156,7 @@ extension CardDeckView {
             let impactFeedback = UIImpactFeedbackGenerator(style: .light)
             impactFeedback.impactOccurred()
         }
+        #endif
         
         // Use smooth easing animation without spring
         withAnimation(.easeOut(duration: duration)) {
@@ -128,8 +180,10 @@ extension CardDeckView {
         // Check velocity-based decision first (for quick swipes)
         if abs(velocity) > velocityThreshold {
             // Provide haptic feedback for fast swipe detection
+            #if canImport(UIKit)
             let selectionFeedback = UISelectionFeedbackGenerator()
             selectionFeedback.selectionChanged()
+            #endif
             return isUpperArea ? velocity > 0 : velocity < 0
         }
         
