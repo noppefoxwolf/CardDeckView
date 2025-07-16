@@ -168,11 +168,7 @@ swift test
 
 ### Xcode Integration
 
-Open `Package.swift` directly in Xcode for the modern SPM workflow, or generate an Xcode project:
-
-```bash
-swift package generate-xcodeproj
-```
+Open `Package.swift` directly in Xcode for the modern Swift Package development.
 
 ## License
 
